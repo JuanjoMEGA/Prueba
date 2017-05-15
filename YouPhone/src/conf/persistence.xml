@@ -6,9 +6,9 @@
     <class>JPA.clases.Comentario</class>
     <class>JPA.clases.Usuario</class>
     <class>JPA.clases.Imagen</class>
-    <class>JPA.clases.Smartphones</class>
     <class>JPA.clases.Carrito</class>
     <class>JPA.clases.Compra</class>
+    <class>JPA.clases.Smartphone</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/prueba"/>

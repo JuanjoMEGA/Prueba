@@ -3,10 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/jjmelgar/Documents/NetBeansProjects/YouPhone/src/java/JPA/controles/CarritoJpaController.java</file>
-            <file>file:/C:/Users/jjmelgar/Documents/NetBeansProjects/YouPhone/src/java/JPA/clases/Comentario.java</file>
-            <file>file:/C:/Users/jjmelgar/Documents/NetBeansProjects/YouPhone/web/index.xhtml</file>
-            <file>file:/C:/Users/jjmelgar/Documents/NetBeansProjects/YouPhone/src/java/JPA/clases/Carrito.java</file>
+            <file>file:/C:/Users/jjmelgar/Documents/NetBeansProjects/YouPhone/src/java/JPA/controles/SmartphonesJpaController.java</file>
+            <file>file:/C:/Users/jjmelgar/Documents/NetBeansProjects/YouPhone/src/java/respaldo/b_smartphone.java</file>
+            <file>file:/C:/Users/jjmelgar/Documents/NetBeansProjects/YouPhone/src/java/JPA/clases/Smartphone.java</file>
+            <file>file:/C:/Users/jjmelgar/Documents/NetBeansProjects/YouPhone/web/index.jsp</file>
         </group>
     </open-files>
 </project-private>

@@ -1,0 +1,2224 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/webflow
+        http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd"
+	parent="operacionesgeneral,detalleoperacionsubflow,detalleoperacion-cabecera">
+
+
+
+	<!-- Variables de flujo compartidas por las diferentes vistas -->
+	<var name="listaAllProveedoresTecnologicos" class="java.util.ArrayList" />
+	<var name="hayBusquedaCliente" class="java.lang.String" />
+	<var name="hayBusquedaCompetidor" class="java.lang.String" />
+	<var name="mercadoSeleccionado" class="es.indra.isl.negocia.bean.MercadoBean" />
+	<var name="arbolMercados" class="es.indra.isl.negocia.bean.ArbolMercadoBean" />
+	<var name="criteriosBusquedaUnidadesEmpresa"
+		class="es.indra.isl.negocia.bean.CriteriosBusquedaUnidadesEmpresa" />
+	<var name="simpleSelectionCliente" class="org.richfaces.model.selection.SimpleSelection" />
+	<var name="simpleSelectionClienteMind" class="org.richfaces.model.selection.SimpleSelection" />
+	<var name="simpleSelectionUnidadesEmpresa" class="es.indra.isl.negocia.util.SelectionModel" />
+	<var name="simpleSelectionUnidadesEmpresaMerHor" class="es.indra.isl.negocia.util.SelectionModel" />
+	<var name="simpleSelectionUnidadesEmpresaHor" class="es.indra.isl.negocia.util.SelectionModel" />
+	<var name="simpleSelectionCompetidor" class="es.indra.isl.negocia.util.SelectionModel" />
+	<var name="busquedaCompetidor"
+		class="es.indra.isl.negocia.bean.CriteriosBusquedaCompetidoresBean" />
+	<var name="nombreCliente" class="es.indra.isl.negocia.bean.CriteriosBusquedaClientesBean" />
+	<var name="clienteSeleccionado" class="es.indra.isl.negocia.bean.ClienteBean" />
+	<var name="simpleSelectionImpacto" class="org.richfaces.model.selection.SimpleSelection" />
+	<var name="usuarioSelection" class="es.indra.isl.negocia.util.SelectionModel" />
+	<var name="usuarioSelectionMerHor" class="es.indra.isl.negocia.util.SelectionModel" />
+	<var name="usuarioSelectionTec" class="es.indra.isl.negocia.util.SelectionModel" />
+	<var name="beanMerHor" class="es.indra.isl.negocia.bean.MercadoHorizontalOfertaBean" />
+	<var name="mapVisibilidad" class="java.util.HashMap" />
+	<var name="listaErrores" class="java.util.ArrayList" />
+	<var name="mapProveedores" class="java.util.HashMap" />
+	<var name="tabsCargados" class="es.indra.isl.negocia.bean.application.TabsCargadosBean" />
+	<var name="mensajeAlerta" class="es.indra.isl.negocia.bean.MensajeBean" />
+	<var name="listadoPaises" class="java.util.ArrayList" />
+	<var name="listadoSegmentosMercado" class="java.util.ArrayList" />
+	<var name="listaCompetidores" class="java.util.ArrayList" />
+	<var name="listaProveedoresOperacion" class="java.util.ArrayList" />
+	<var name="listaContratosMarco" class="java.util.ArrayList" />
+	<var name="simpleSelectionContratoMarco" class="es.indra.isl.negocia.util.SelectionModel" />
+	<var name="criteriosBusquedaContratosMarco"
+		class="es.indra.isl.negocia.bean.CriteriosBusquedaContratosMarcoBean" />
+	<var name="garantiaSeleccionada" class="es.indra.isl.negocia.bean.GarantiaBean" />
+	<var name="listaErroresGarantia" class="java.util.ArrayList" />
+	<var name="infoPaisActual" class="es.indra.isl.negocia.bean.InfoPaisOpBean" />
+	<var name="mapaInfoPaises" class="java.util.HashMap" />
+	<var name="infoPaisPos" class="java.lang.String" />
+	<var name="beanUniProd" class="es.indra.isl.negocia.bean.UnidadProduccionOpBean" />
+	<var name="usuarioSelectionUnidProd" class="es.indra.isl.negocia.util.SelectionModel" />
+	<var name="beanMoneda" class="es.indra.isl.negocia.bean.MonedaBean" />
+	<var name="beanMonedaSel" class="es.indra.isl.negocia.bean.MonedaBean" />
+	<var name="tipoInteresSeleccionado" class="es.indra.isl.negocia.bean.TipoInteresBean" />
+
+	<var name="errorAceptarCompetidor" class="es.indra.isl.negocia.bean.MensajeBean" />
+	<var name="listaErroresInfoPaises" class="java.util.ArrayList" />
+	<var name="listaProveedoresActivos" class="java.util.ArrayList" />
+
+	<!-- Identificador de contrato -->
+	<var name="idContrato"
+		class="indra.negocia.contractualdocumentmanager.model.ContractID" />
+
+	<on-start>
+		<evaluate
+			expression="operacionComercialMBean.obtenerProveedoresTecnologicos(operacionConsultada)"
+			result="listaProveedoresOperacion" />
+		<evaluate
+			expression="contratoMarcoMBean.inicializarCriteriosContMarco(criteriosBusquedaContratosMarco)"></evaluate>
+		<set name="flowScope.infoPaisPos" value="0"></set>
+		<set name="flowScope.numInfoPais" value="0" type="java.lang.Integer"></set>
+		<!-- <evaluate expression="operacionComercialMBean.cargaMapaInfoPais(operacionConsultada.listaInfoOtrosPaises,mapaInfoPaises)" 
+			result="flowScope.numInfoPais"/> -->
+		<!-- carga la información referente a proveedores tecnologicos de la operacion -->
+		<!-- <set name="operacionConsultada.proveedores" value="listaProveedoresOperacion"/> -->
+		<evaluate
+			expression="seleccionProveedorTecnologicoMBean.obtenerAllListaProveedores()"
+			result="flowScope.listaAllProveedoresTecnologicos" />
+		<evaluate
+			expression="seleccionProveedorTecnologicoMBean.obtenerAllMapProveedores(listaAllProveedoresTecnologicos)"
+			result="flowScope.mapProveedores" />
+		<evaluate
+			expression="seleccionProveedorTecnologicoMBean.actualizarTipoProveedoresOperacion(listaAllProveedoresTecnologicos,operacionConsultada)"
+			result="operacionConsultada" />
+		<evaluate
+			expression="seleccionProveedorTecnologicoMBean.obtenerListaProveedoresVisibles(operacionConsultada.proveedores,flowScope.listaAllProveedoresTecnologicos)"
+			result="flowScope.listaProveedoresActivos" />
+		<evaluate
+			expression="seleccionProveedorTecnologicoMBean.obtenerListaProveedoresTipo(flowScope.listaProveedoresActivos,'1')"
+			result="flowScope.listaProveedoresPrincipal" />
+		<evaluate
+			expression="seleccionProveedorTecnologicoMBean.obtenerProveedoresTecnologicos(flowScope.listaProveedoresPrincipal,listaProveedoresOperacion, operacionConsultada.proveedorOtros)"
+			result="operacionConsultada.listaProveedoresTecnologicos" />
+		<evaluate expression="operacionConsultada.listaProveedorOtros.clear()" />
+		<evaluate
+			expression="operacionConsultada.listaProveedorOtros.add(operacionConsultada.proveedorOtros)" />
+		<evaluate
+			expression="operacionComercialMBean.buscarListadoUsuariosAutorizaAJ(operacionConsultada)"
+			result="flowScope.listadoUsuariosAJ"></evaluate>
+	</on-start>
+
+	<view-state id="base" parent="operacionesgeneral#base">
+		<var name="seleccionProveedorTecnologicoBean"
+			class="es.indra.isl.negocia.bean.SeleccionProveedorTecnologicoBean" />
+		<var name="criteriosBusquedaResponsable"
+			class="es.indra.isl.negocia.bean.CriteriosBusquedaUsuariosBean" />
+		<var name="responsableSeleccionado" class="es.indra.isl.negocia.bean.BusquedaUsuarioBean" />
+		<var name="listaProcesosNegocio" class="java.util.ArrayList" />
+		<var name="simpleSelectionProceso" class="org.richfaces.model.selection.SimpleSelection" />
+		<var name="listaBeneficios" class="java.util.ArrayList" />
+		<var name="simpleSelectionBeneficio" class="org.richfaces.model.selection.SimpleSelection" />
+		<var name="listaImpactos" class="java.util.ArrayList" />
+		<!-- <var name="mapConfigEmpresaMercado" class="java.util.HashMap"/> -->
+		<var name="resoluble" class="java.lang.String" />
+		<var name="listaColumnas" class="java.util.ArrayList" />
+		<var name="listaFilas" class="java.util.ArrayList" />
+		<var name="simpleSelectionServicio" class="org.richfaces.model.selection.SimpleSelection" />
+
+		<var name="beanCompetidor" class="es.indra.isl.negocia.bean.CompetidorOfertaBean" />
+		<var name="listadoMerHor" class="java.util.ArrayList" />
+
+		<var name="altaClienteBean" class="es.indra.isl.negocia.bean.PreAltaClienteBean" />
+		<var name="altaCompetidorBean" class="es.indra.isl.negocia.bean.PreAltaCompetidorBean" />
+		<var name="criteriosBusquedaResponsable"
+			class="es.indra.isl.negocia.bean.CriteriosBusquedaUsuariosBean" />
+		<var name="responsableSeleccionado" class="es.indra.isl.negocia.bean.BusquedaUsuarioBean" />
+		<var name="proveedorSeleccionado" class="es.indra.isl.negocia.bean.ProveedorTecnologicoBean" />
+		<var name="arbolUnidadesEmpresa" class="es.indra.isl.negocia.bean.ArbolUnidadesEmpresaBean" />
+		<var name="ficheroUpload" class="es.indra.isl.negocia.bean.FileUploadBean" />
+		<var name="plantillaExcel" class="es.indra.isl.negocia.bean.ConfiguracionBean" />
+
+		<var name="arbolSoluciones" class="es.indra.isl.negocia.bean.ArbolSolucionesBean" />
+		<var name="arbolServicios" class="es.indra.isl.negocia.bean.ArbolServiciosBean" />
+
+		<!-- Mensaje para confirmación de guardar cambios -->
+		<var name="mensajeErrorEstimaciones" class="java.lang.String" />
+
+		<var name="contratoMarco" class="es.indra.isl.negocia.bean.ContratoMarcoBean" />
+		<!-- Identificador de contrato -->
+		<var name="idContrato"
+			class="indra.negocia.contractualdocumentmanager.model.ContractID" />
+		<!-- Bean de soporte documental -->
+		<var name="soporteDocumentalContMarco" class="es.indra.isl.negocia.bean.SoporteDocumentalBean" />
+
+		<var name="listaMercadoGlobal" class="java.util.ArrayList" />
+
+		<!-- Metaclientes -->
+		<var name="metaClientesSelectionModel" class="org.richfaces.model.selection.SimpleSelection" />
+		<var name="criteriosBusquedaMetaCliente"
+			class="es.indra.isl.negocia.bean.CriteriosBusquedaMetaClientesBean" />
+
+		<!-- Fecha de cliente -->
+		<var name="clientDate" class="java.lang.String" />
+
+		<var name="documentoContrato" class="es.indra.isl.negocia.bean.DocumentoContractualBean" />
+
+		<var name="mensajeCompromisoIndividual" class="es.indra.isl.negocia.bean.MensajeBean" />
+		<var name="compromisoContrato" class="es.indra.isl.negocia.bean.CompromisoContratoBean" />
+		<var name="cdServicio" class="java.lang.String" />
+		<var name="cdServicioUpdate" class="java.lang.String" />
+		<var name="dsServicio" class="java.lang.String" />
+
+		<!-- Soporte Documental -->
+		<var name="isOkSopDoc" class="es.indra.isl.negocia.bean.MensajeBean" />
+
+
+
+		<on-entry>
+			<!-- obtenemos si el comportamiento del formulario debe ser solo lectura -->
+			<evaluate
+				expression="operacionComercialMBean.obtenerValorSoloLecturaUsuario(operacionConsultada,detalleOperacionBean,conversationScope.listaAccionesPerm)"></evaluate>
+			<set name="viewScope.listaDivisas" value="divisas.listaDivisas"></set>
+			<set name="viewScope.soloConsulta" value="detalleOperacionBean.soloConsulta"></set>
+			<evaluate
+				expression="(operacionConsultada.cddivpro == '' or operacionConsultada.cddivpro == null)?'EUR':operacionConsultada.cddivpro"
+				result="operacionConsultada.cddivpro" />
+			<!--set name="flowScope.listaEmpresas" value="empresas.listaEmpresas"></set -->
+			<!-- <evaluate expression="unidadesEmpresaMBean.cargarListaEmpresasNegVisibilidad()" 
+				result="flowScope.listaEmpresas"/> -->
+			<evaluate expression="unidadesEmpresaMBean.cargarListaEmpresas(true, true)"
+				result="flowScope.listaEmpresas" />
+			<!-- <evaluate expression="operacionComercialMBean.obtenerParametrosEmpresaMercado(operacionConsultada.codigoEmpresa,operacionConsultada.codigoMercado)" 
+				result="mapConfigEmpresaMercado"/> -->
+			<evaluate
+				expression="operacionComercialMBean.setDatosStatusFechaInicio(operacionConsultada)"></evaluate>
+			<evaluate
+				expression="operacionComercialMBean.validarAbiertoPipelinePrevisiones(operacionConsultada,conversationScope.requisitosOperacion)"
+				result="viewScope.openedDatosPipelinePrevisiones"></evaluate>
+			<evaluate
+				expression="alertasMBean.obtenerInfoTratamientoAlerta(operacionConsultada,listaAlertas,'10')" />
+			<set name="arbolSoluciones" value="null" />
+			<set name="arbolServicios" value="null" />
+			<!-- <set name="operacionConsultada.proveedores" value="listaProveedoresOperacion"/> -->
+
+			<evaluate
+				expression="(operacionConsultada.contratosMarco != null and operacionConsultada.contratosMarco.size() == 0)? false: true"
+				result="operacionConsultada.operacionAsociadaContMarco" />
+
+			<!-- carga la información referente a proveedores tecnologicos de la operacion -->
+			<!-- <evaluate expression="seleccionProveedorTecnologicoMBean.obtenerAllListaProveedores()" 
+				result="flowScope.listaAllProveedoresTecnologicos" /> -->
+			<!-- <evaluate expression="seleccionProveedorTecnologicoMBean.obtenerAllMapProveedores(listaAllProveedoresTecnologicos)" 
+				result="flowScope.mapProveedores" /> -->
+			<!-- <evaluate expression="seleccionProveedorTecnologicoMBean.actualizarTipoProveedoresOperacion(listaAllProveedoresTecnologicos,operacionConsultada)" 
+				result="operacionConsultada" /> -->
+			<!-- <evaluate expression="seleccionProveedorTecnologicoMBean.obtenerListaProveedoresVisibles(operacionConsultada.proveedores,flowScope.listaAllProveedoresTecnologicos)" 
+				result="viewScope.listaProveedoresActivos"/> -->
+			<!-- <evaluate expression="seleccionProveedorTecnologicoMBean.obtenerListaProveedoresTipo(viewScope.listaProveedoresActivos,'1')" 
+				result="viewScope.listaProveedoresPrincipal"/> -->
+			<!-- <evaluate expression="seleccionProveedorTecnologicoMBean.obtenerProveedoresTecnologicos(viewScope.listaProveedoresPrincipal,listaProveedoresOperacion, 
+				operacionConsultada.proveedorOtros)" result="operacionConsultada.listaProveedoresTecnologicos"/> -->
+			<!-- <evaluate expression="operacionConsultada.listaProveedorOtros.add(operacionConsultada.proveedorOtros)"/> -->
+			<set name="flowScope.mostrarAceptarResponsableUE" value="false"
+				type="boolean"></set>
+			<set name="flowScope.mostrarAceptarResponsableUP" value="false"
+				type="boolean"></set>
+			<evaluate
+				expression="operacionComercialMBean.cargaMapaInfoPais(operacionConsultada.listaInfoOtrosPaises,mapaInfoPaises)"
+				result="flowScope.numInfoPais" />
+			<evaluate expression="operacionComercialMBean.cargarComboPaises()"
+				result="flowScope.listadoPaises" />
+
+		</on-entry>
+
+		<transition on="asignaraproyecto" to="asignaproyecto"></transition>
+
+
+		<transition on="aceptarMercado">
+			<set name="mercadoSeleccionado" value="arbolMercados.nodoSeleccionado" />
+			<set name="operacionConsultada.codigoMercado" value="mercadoSeleccionado.cdMerOrg"></set>
+			<set name="operacionConsultada.mercado" value="mercadoSeleccionado.dsMerOrg"></set>
+			<render fragments="textoMercado,codigoMercado"></render>
+		</transition>
+
+		<transition on="cargarListaUnidadEmpresa">
+			<set name="viewScope.tokenConValidacion" value="'S'"></set>
+			<render fragments="panelDialogos" />
+			<set name="criteriosBusquedaUnidadesEmpresa.codEmpresa" value="operacionConsultada.codigoEmpresa"></set>
+			<evaluate
+				expression="unidadesEmpresaMBean.cargarListaUnidadesEmpresa(criteriosBusquedaUnidadesEmpresa)"
+				result="viewScope.listadoUnidadesEmpresa" />
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('listaUnidadesEmpresa')" />
+		</transition>
+
+
+		<!-- transiciones proveedores -->
+		<transition on="aceptarProveedor">
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.agregarProveedores(operacionConsultada.listaProveedoresTecnologicos,operacionConsultada.proveedores)" />
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.agregarProveedor(operacionConsultada.listaProveedorOtros,operacionConsultada.proveedores)" />
+			<render fragments="listaProveedoresPanel,listaProveedores,listaProveedorOtros"></render>
+		</transition>
+
+		<transition on="eliminarProveedor">
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.eliminarProveedor(requestParameters.proveedorEliminado,operacionConsultada.proveedores)" />
+		</transition>
+		<!-- fin transiciones proveedores -->
+
+		<transition on="iniciarBusquedaResponsables">
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('busquedaResponsables')" />
+			<render fragments="panelDialogos" />
+			<!-- <evaluate expression="viewScope.listaUsuarios.clear()"/> -->
+			<set name="viewScope.listaUsuarios" value="null" />
+			<set name="criteriosBusquedaResponsable.descripcion" value="null" />
+			<set name="criteriosBusquedaResponsable.codigo" value="null" />
+		</transition>
+
+		<transition on="iniciarBusquedaResponsablesTec">
+			<!-- <evaluate expression="viewScope.listaUsuarios.clear()"/> -->
+			<set name="viewScope.listaUsuarios" value="null" />
+			<set name="criteriosBusquedaResponsable.descripcion" value="null" />
+			<set name="criteriosBusquedaResponsable.codigo" value="null" />
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('busquedaResponsablesTecnicos')" />
+			<render fragments="panelDialogos" />
+		</transition>
+
+		<transition on="iniciarBusquedaClientes">
+			<set name="viewScope.tokenConValidacion" value="'S'"></set>
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogoAnidado('busquedaClientes')" />
+		</transition>
+
+		<transition on="buscarUsuariosResponsable">
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuarios(criteriosBusquedaResponsable)"
+				result="viewScope.listaUsuarios" />
+			<evaluate expression="usuarioSelection.clear()" />
+			<render fragments="formBusquedaResponsables:tablaResponsable" />
+		</transition>
+
+		<!-- Transicion tras informar un codigo de usuario -->
+		<transition on="cargarDatosResponsable">
+			<set name="operacionConsultada.descripcionRenponsable" value="null" />
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuario(operacionConsultada.codigoResponsable)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="operacionConsultada.codigoResponsable" value="viewScope.responsableSeleccionado.codEmpleado" />
+			<set name="operacionConsultada.descripcionRenponsable" value="viewScope.responsableSeleccionado.desEmpleado" />
+			<set name="operacionConsultada.codigoEmpresaResponsable" value="viewScope.responsableSeleccionado.codEmpresa" />
+		</transition>
+
+		<transition on="aceptarResponsable">
+			<evaluate
+				expression="seleccionUsuarioMBean.aceptarUsuario(usuarioSelection,viewScope.listaUsuarios)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="operacionConsultada.codigoResponsable" value="viewScope.responsableSeleccionado.codEmpleado" />
+			<set name="operacionConsultada.descripcionRenponsable" value="viewScope.responsableSeleccionado.desEmpleado" />
+			<set name="operacionConsultada.codigoEmpresaResponsable" value="viewScope.responsableSeleccionado.codEmpresa" />
+			<evaluate expression="usuarioSelection.clear()" />
+			<render fragments="codResponsable,descripcionRenponsable" />
+		</transition>
+
+		<transition on="borrarResponsable">
+			<set name="operacionConsultada.codigoResponsable" value="null" />
+			<render fragments="codResponsable" />
+		</transition>
+
+		<transition on="buscarRespTec">
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuarios(criteriosBusquedaResponsable)"
+				result="viewScope.listaUsuarios" />
+			<evaluate expression="usuarioSelectionTec.clear()" />
+			<render fragments="formBusquedaRespTec:tablaRespTec" />
+		</transition>
+
+		<!-- Transicion tras informar un codigo de usuario -->
+		<transition on="cargarDatosResponsableTec">
+			<set name="operacionConsultada.descRestec" value="null" />
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuario(operacionConsultada.cdrestec)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="operacionConsultada.cdrestec" value="viewScope.responsableSeleccionado.codEmpleado" />
+			<set name="operacionConsultada.descRestec" value="viewScope.responsableSeleccionado.desEmpleado" />
+		</transition>
+		<transition on="aceptarRespTec">
+			<evaluate
+				expression="seleccionUsuarioMBean.aceptarUsuario(usuarioSelectionTec,viewScope.listaUsuarios)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="operacionConsultada.cdrestec" value="viewScope.responsableSeleccionado.codEmpleado" />
+			<set name="operacionConsultada.descRestec" value="viewScope.responsableSeleccionado.desEmpleado" />
+			<evaluate expression="usuarioSelectionTec.clear()" />
+			<render fragments="codRespTec,descRestec" />
+		</transition>
+
+		<transition on="borrarRespTec">
+			<set name="operacionConsultada.cdrestec" value="null" />
+			<render fragments="codRespTec" />
+		</transition>
+
+		<transition on="cargarDialogoSoluciones">
+			<evaluate
+				expression="seleccionSolucionMBean.buscarSoluciones(arbolSoluciones, true)"
+				result="arbolSoluciones" />
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('soluciones')" />
+		</transition>
+
+		<transition on="aceptarSolucion">
+			<evaluate
+				expression="seleccionSolucionMBean.agregarSolucion(arbolSoluciones.nodoSeleccionado,operacionConsultada)" />
+			<render fragments="listaSoluciones"></render>
+		</transition>
+
+		<transition on="eliminarSolucion">
+			<evaluate
+				expression="seleccionSolucionMBean.eliminarSolucion(requestParameters.solucionEliminado,operacionConsultada.soluciones)" />
+		</transition>
+
+		<transition on="aceptarGarantia">
+			<evaluate expression="listaErroresGarantia.clear()" />
+			<evaluate
+				expression="operacionComercialMBean.procesarAceptarPopupGarantia(garantiaSeleccionada,operacionConsultada,listaErroresGarantia)" />
+		</transition>
+
+		<transition on="abrirNuevaGarantia">
+			<evaluate expression="listaErroresGarantia.clear()" />
+			<evaluate expression="garantiaSeleccionada.reset()" />
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('garantias')" />
+		</transition>
+
+		<transition on="abrirEdicionGarantia">
+			<evaluate expression="listaErroresGarantia.clear()" />
+			<evaluate expression="garantiaSeleccionada.reset()" />
+			<evaluate
+				expression="operacionComercialMBean.procesarAperturaEdicionGarantia(requestParameters.idGarantia,operacionConsultada)"
+				result="garantiaSeleccionada" />
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('garantias')" />
+		</transition>
+
+		<transition on="eliminarGarantia">
+			<evaluate
+				expression="operacionComercialMBean.procesarEliminarGarantiaDeLista(requestParameters.idGarantia,operacionConsultada)" />
+			<render fragments="panelGarantias"></render>
+		</transition>
+
+		<transition on="procesarOpcionHerenciaGarantia">
+			<evaluate
+				expression="operacionComercialMBean.procesarOpcionPreguntaHerenciaGarantias(operacionConsultada)" />
+			<render fragments="panelGarantias"></render>
+		</transition>
+
+
+		<transition on="procesarSeleccionUnidadEmpresaLista">
+			<render
+				fragments="codigoUnidadEmpresa,empresa,descUnidadEmpresa,codigoMercado,textoMercado,codempresa,datosAdministrativos,:detalleOperacionForm:vistaTabRequeridosOportunidad:listaSegmentosMercado,panelDatosIdentificativos" />
+			<evaluate
+				expression="unidadesEmpresaMBean.agregarUnidadEmpresa(simpleSelectionUnidadesEmpresa,listadoUnidadesEmpresa)"
+				result="viewScope.unidadEmpresaSeleccionada" />
+			<set name="operacionConsultada.codigoUnidadEmpresa" value="unidadEmpresaSeleccionada.cdCencos" />
+			<set name="operacionConsultada.descUnidadEmpresa" value="unidadEmpresaSeleccionada.dsNomcen" />
+			<set name="operacionConsultada.codigoEmpresa" value="criteriosBusquedaUnidadesEmpresa.codEmpresa" />
+			<set name="operacionConsultada.codigoMercado" value="unidadEmpresaSeleccionada.cdMerorg" />
+			<set name="operacionConsultada.mercado" value="unidadEmpresaSeleccionada.dsMerorg" />
+			<evaluate
+				expression="operacionComercialMBean.isDatosAdicOperacionInternac(operacionConsultada)" />
+			<evaluate
+				expression="operacionComercialMBean.cargarSegmentosMercado(operacionConsultada)"
+				result="viewScope.listadoSegmentosMercado"></evaluate>
+			<!-- <evaluate expression="operacionComercialMBean.obtenerParametrosEmpresaMercado(operacionConsultada.codigoEmpresa,operacionConsultada.codigoMercado)" 
+				result="mapConfigEmpresaMercado"/> -->
+		</transition>
+
+		<transition on="cargarDatosUnidadEmpresa">
+			<set name="operacionConsultada.descUnidadEmpresa" value="null" />
+			<set name="operacionConsultada.codigoMercado" value="null" />
+			<set name="operacionConsultada.mercado" value="null" />
+			<set name="criteriosBusquedaUnidadesEmpresa.codEmpresa" value="operacionConsultada.codigoEmpresa"></set>
+			<evaluate
+				expression="unidadesEmpresaMBean.buscarUnidadEmpresa(operacionConsultada.codigoUnidadEmpresa, criteriosBusquedaUnidadesEmpresa)"
+				result="viewScope.unidadEmpresaSeleccionada" />
+			<set name="operacionConsultada.codigoUnidadEmpresa" value="unidadEmpresaSeleccionada.cdCencos" />
+			<set name="operacionConsultada.descUnidadEmpresa" value="unidadEmpresaSeleccionada.dsNomcen" />
+			<set name="operacionConsultada.codigoEmpresa" value="criteriosBusquedaUnidadesEmpresa.codEmpresa" />
+			<set name="operacionConsultada.codigoMercado" value="unidadEmpresaSeleccionada.cdMerorg" />
+			<set name="operacionConsultada.mercado" value="unidadEmpresaSeleccionada.dsMerorg" />
+			<evaluate
+				expression="unidadesEmpresaMBean.getMercadoGlobalDeUnidadEmpresa(unidadEmpresaSeleccionada)"
+				result="operacionConsultada.codMercadoGlobal"></evaluate>
+			<evaluate
+				expression="operacionComercialMBean.isDatosAdicOperacionInternac(operacionConsultada)" />
+			<evaluate
+				expression="operacionComercialMBean.cargarSegmentosMercado(operacionConsultada)"
+				result="viewScope.listadoSegmentosMercado"></evaluate>
+			<!-- <evaluate expression="operacionComercialMBean.obtenerParametrosEmpresaMercado(operacionConsultada.codigoEmpresa,operacionConsultada.codigoMercado)" 
+				result="mapConfigEmpresaMercado"/> -->
+		</transition>
+
+		<transition on="validarCargaDatosUnidadEmpresa">
+			<evaluate
+				expression="unidadesEmpresaMBean.getValidacionMercadoGlobalDeUnidadEmpresa(operacionConsultada)"
+				result="viewScope.seleccionUnidadEmpresaValida" />
+			<set name="viewScope.tokenConValidacion" value="'S'"></set>
+		</transition>
+
+		<transition on="recargarListaUnidadEmpresa">
+			<evaluate
+				expression="unidadesEmpresaMBean.cargarListaUnidadesEmpresa(criteriosBusquedaUnidadesEmpresa)"
+				result="viewScope.listadoUnidadesEmpresa" />
+			<evaluate expression="simpleSelectionUnidadesEmpresa.clear()" />
+		</transition>
+
+		<transition on="recargarArbolUnidadEmpresa">
+			<evaluate
+				expression="unidadesEmpresaMBean.cargarUnidadesEmpresa(arbolUnidadesEmpresa, criteriosBusquedaUnidadesEmpresa)" />
+		</transition>
+
+		<transition on="actualizaDatosDependientesEmpresa">
+			<render fragments="datosAdministrativos"></render>
+			<evaluate
+				expression="operacionComercialMBean.isDatosAdicOperacionInternac(operacionConsultada)"></evaluate>
+			<evaluate expression="operacionConsultada.mercadosHorizontales.clear()" />
+			<evaluate
+				expression="operacionComercialMBean.cargaPaisPrincipal(operacionConsultada)" />
+			<evaluate
+				expression="operacionComercialMBean.actualizarDivisaEmpresa(operacionConsultada)" />
+			<evaluate
+				expression="seleccionUnidEntMBean.actualizarUnidEnt(operacionConsultada)" />
+			<!-- <evaluate expression="operacionComercialMBean.obtenerParametrosEmpresaMercado(operacionConsultada.codigoEmpresa,operacionConsultada.codigoMercado)" 
+				result="mapConfigEmpresaMercado"/> -->
+		</transition>
+
+		<!-- transiciones EP -->
+		<transition on="buscarCliente">
+			<evaluate
+				expression="seleccionClienteMBean.buscarClientesAvanzado(nombreCliente,operacionConsultada,true)"
+				result="viewScope.listadoDeClientes" />
+			<evaluate expression="simpleSelectionCliente.clear()" />
+			<set name="hayBusquedaCliente" value="'S'" />
+			<set name="viewScope.esContrato" value="operacionConsultada.contrato"
+				type="boolean" />
+			<render
+				fragments="formPopupCliente:tablaClientes, formPopupCliente:panelBotonesPopupClientes" />
+		</transition>
+
+		<transition on="iniciarBusquedaResponsablesMerHor">
+			<render fragments="contenedorBusquedaResponsablesMerHor" />
+			<set name="viewScope.listaUsuarios" value="null" />
+			<set name="criteriosBusquedaResponsable.descripcion" value="null" />
+			<set name="criteriosBusquedaResponsable.codigo" value="null" />
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogoAnidado('busquedaResponsablesMerHor')" />
+		</transition>
+
+		<transition on="buscarUsuariosMerHor">
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuarios(criteriosBusquedaResponsable)"
+				result="viewScope.listaUsuarios" />
+			<evaluate expression="usuarioSelectionMerHor.clear()" />
+			<render fragments="formBusquedaResponsablesMerHor:tablaResponsablesMerHor" />
+		</transition>
+
+		<transition on="abrirAltaCliente">
+			<evaluate expression="seleccionClienteMBean.cargarDatosAltaCliente()"
+				result="viewScope.altaClienteBean" />
+			<evaluate
+				expression="seleccionClienteMBean.setearInfluenciaEmpresaFormacion(null,operacionConsultada,viewScope.altaClienteBean)" />
+			<render fragments="mostrarAltaClientePopup" />
+		</transition>
+
+		<transition on="guardarAltaCliente">
+			<evaluate expression="altaClienteBean.setOperacion(operacionConsultada)" />
+			<evaluate
+				expression="seleccionClienteMBean.guardarPreAltaCliente(altaClienteBean)" />
+			<set name="hayBusquedaCliente" value="'N'" />
+			<evaluate expression="simpleSelectionCliente.clear()" />
+			<set name="nombreCliente.descripcion" value="altaClienteBean.dsNomCli"></set>
+			<evaluate
+				expression="seleccionClienteMBean.buscarClientesInfluenciaPais(nombreCliente)"
+				result="viewScope.listadoDeClientes" />
+			<render
+				fragments="formPopupCliente:tablaClientes, formPopupCliente:nombreCliente" />
+		</transition>
+
+		<transition on="agregarCliente">
+			<evaluate
+				expression="seleccionClienteMBean.agregarClientes(simpleSelectionCliente,listadoDeClientes)"
+				result="flowScope.clienteSeleccionado" />
+			<set name="operacionConsultada.codigoCliente" value="flowScope.clienteSeleccionado.cdClient"></set>
+			<set name="operacionConsultada.descripcionCliente" value="flowScope.clienteSeleccionado.dsClient"></set>
+			<set name="operacionConsultada.dsPaisCliente" value="flowScope.clienteSeleccionado.dsPaises"></set>
+			<set name="operacionConsultada.paisCliente" value="flowScope.clienteSeleccionado.cdPaises"></set>
+			<set name="operacionConsultada.stringIsClienteNuevo" value="flowScope.clienteSeleccionado.nuevo"></set>
+			<set name="operacionConsultada.perteneciaGrupoIndra" value="flowScope.clienteSeleccionado.perteneciaGrupoIndra"></set>
+			<set name="hayBusquedaCliente" value="'N'" />
+
+			<!-- Selección de metacliente -->
+			<evaluate
+				expression="seleccionClienteMBean.detalleMetaCliente(flowScope.clienteSeleccionado.codMetaCliente)"
+				result="flowScope.metaClienteSeleccionado" />
+			<set name="operacionConsultada.codMetaCliente" value="flowScope.metaClienteSeleccionado.codMetaCliente"></set>
+			<set name="operacionConsultada.descMetaCliente" value="flowScope.metaClienteSeleccionado.descMetaCliente"></set>
+
+			<evaluate expression="simpleSelectionCliente.clear()" />
+			<render
+				fragments="panelClienteDetalleOperacion,botonCrear,panelDatosIdentificativos"></render>
+		</transition>
+
+		<transition on="validarSeleccionCliente">
+			<evaluate
+				expression="seleccionClienteMBean.agregarClientes(simpleSelectionCliente, listadoDeClientes)"
+				result="viewScope.clientePreseleccionado" />
+			<evaluate
+				expression="seleccionClienteMBean.getValidacionMetaClienteDeCliente(viewScope.clientePreseleccionado, operacionConsultada.codMetaCliente)"
+				result="flowScope.seleccionClienteValida" />
+		</transition>
+
+		<transition on="cargarDialogoServicios">
+			<evaluate
+				expression="seleccionServicioMBean.buscarServicios(arbolServicios, true)"
+				result="arbolServicios" />
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('servicios')" />
+		</transition>
+
+		<transition on="aceptarServicio">
+			<evaluate
+				expression="seleccionServicioMBean.agregarServicio(arbolServicios.nodoSeleccionado,operacionConsultada)" />
+			<render fragments="listaServicios"></render>
+		</transition>
+
+		<transition on="eliminarServicio">
+			<evaluate
+				expression="seleccionServicioMBean.eliminarServicio(requestParameters.servicioEliminado,operacionConsultada.servofers)" />
+		</transition>
+
+		<transition on="inicializarCompetidor">
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('competidores')" />
+			<render fragments="panelDialogos"></render>
+		</transition>
+
+		<transition on="agregarCompetidor">
+			<evaluate
+				expression="seleccionCompetidorMBean.validarEdicionCompetidorSeleccionado(errorAceptarCompetidor, flowScope.competidorSeleccionado)"
+				result="viewScope.resultadoValidacionCompetidor" />
+			<evaluate
+				expression="seleccionCompetidorMBean.agregarCompetidorAOperacion(flowScope.competidorSeleccionado,operacionConsultada)" />
+			<set name="hayBusquedaCompetidor" value="'N'" />
+			<render fragments="listaCompetidores, botonCrear, panelDatosIdentificativos"></render>
+		</transition>
+
+		<transition on="seleccionarCompetidor">
+			<evaluate
+				expression="seleccionCompetidorMBean.agregarCompetidor(simpleSelectionCompetidor,listadoDeCompetidores)"
+				result="flowScope.competidorSeleccionado" />
+			<set name="errorAceptarCompetidor.mensaje" value="''" />
+			<evaluate expression="simpleSelectionCompetidor.clear()" />
+			<render fragments="EditaSeleccionCompetidorPanel"></render>
+		</transition>
+
+		<transition on="modificarCompetidor">
+			<evaluate
+				expression="seleccionCompetidorMBean.modificarCompetidor(requestParameters.competidorModificado,operacionConsultada.compofers)"
+				result="flowScope.competidorSeleccionado" />
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('competidores')" />
+			<render fragments="panelDialogos"></render>
+		</transition>
+
+		<transition on="eliminarCompetidor">
+			<evaluate
+				expression="seleccionCompetidorMBean.eliminarCompetidor(requestParameters.competidorEliminado,operacionConsultada.compofers)" />
+			<render fragments="listaCompetidores"></render>
+		</transition>
+
+		<transition on="buscarCompetidor">
+			<evaluate
+				expression="seleccionCompetidorMBean.buscarCompetidoresAvanzado(busquedaCompetidor)"
+				result="viewScope.listadoDeCompetidores" />
+			<evaluate expression="simpleSelectionCompetidor.clear()" />
+			<set name="hayBusquedaCompetidor" value="'S'" />
+			<set name="viewScope.esContrato" value="operacionConsultada.contrato"
+				type="boolean" />
+			<render fragments="tablaCompetidores, botonSolicitarAlta" />
+		</transition>
+
+		<transition on="abrirAltaCompetidor">
+			<evaluate expression="seleccionCompetidorMBean.cargarDatosAltaCompetidor()"
+				result="altaCompetidorBean" />
+			<set name="errorAceptarCompetidor.mensaje" value="''" />
+			<render fragments="mostrarAltaCompetidorPopup" />
+		</transition>
+
+		<transition on="guardarAltaCompetidor">
+			<evaluate
+				expression="seleccionCompetidorMBean.validarPrealtaCompetidor(errorAceptarCompetidor, altaCompetidorBean)"
+				result="viewScope.resultadoValidacionCompetidor" />
+			<evaluate
+				expression="seleccionCompetidorMBean.guardarPreAltaCompetidor(altaCompetidorBean)" />
+			<set name="hayBusquedaCompetidor" value="'N'" />
+			<evaluate expression="simpleSelectionCompetidor.clear()" />
+			<set name="busquedaCompetidor.descripcion" value="altaCompetidorBean.dsNomcom"></set>
+			<evaluate
+				expression="seleccionCompetidorMBean.buscarCompetidoresAvanzado(busquedaCompetidor)"
+				result="viewScope.listadoDeCompetidores" />
+			<render fragments="tablaCompetidores, botonSolicitarAlta" />
+		</transition>
+
+		<transition on="inicializarMerHor">
+			<evaluate expression="seleccionMercaHorMBean.inicializarMerHor()"
+				result="beanMerHor" />
+			<evaluate
+				expression="seleccionMercaHorMBean.buscarMercaHor(operacionConsultada.codigoEmpresa)"
+				result="viewScope.listadoMerHor"></evaluate>
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('mercadosHorizontales')" />
+			<render fragments="panelDialogos"></render>
+		</transition>
+
+		<transition on="cargarListaUnidadEmpresaMerHor">
+			<render fragments="panelDialogosMerHor" />
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogoAnidado('unidadesEmpresaMerHor')" />
+			<evaluate
+				expression="unidadesEmpresaMBean.cargarUnidadesEmpresaMerHor(operacionConsultada.codigoEmpresa,beanMerHor.cdmerhor)"
+				result="viewScope.listaUnidadEmpMerHor" />
+		</transition>
+
+		<transition on="cargarListaUnidadEmpresaHor">
+			<render fragments="panelDialogosHor" />
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogoAnidado('unidadesEmpresaHor')" />
+			<evaluate
+				expression="seleccionUnidEntMBean.cargarUnidadesEmpresaHor(operacionConsultada.codigoEmpresa,beanMerHor.cdmerhor)"
+				result="viewScope.listaUnidadEmpHor" />
+		</transition>
+
+		<transition on="aceptarResponsableMerHor">
+			<evaluate
+				expression="seleccionUsuarioMBean.aceptarUsuario(usuarioSelectionMerHor,viewScope.listaUsuarios)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="beanMerHor.cdreshor" value="viewScope.responsableSeleccionado.codEmpleado" />
+			<set name="beanMerHor.dsreshor" value="viewScope.responsableSeleccionado.desEmpleado" />
+			<evaluate expression="usuarioSelectionMerHor.clear()" />
+			<render fragments="panelFormMerHor" />
+		</transition>
+
+		<transition on="aceptarMerHor">
+			<evaluate
+				expression="seleccionMercaHorMBean.aceptarMerHor(beanMerHor,operacionConsultada,listadoMerHor)" />
+			<render fragments="panelTablaMerHor" />
+		</transition>
+
+		<transition on="modificarMerHor">
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('mercadosHorizontales')" />
+			<evaluate
+				expression="seleccionMercaHorMBean.buscarMercaHor(operacionConsultada.codigoEmpresa)"
+				result="viewScope.listadoMerHor"></evaluate>
+			<evaluate
+				expression="seleccionMercaHorMBean.modificarMerHor(requestParameters.merhorModificado,operacionConsultada.mercadosHorizontales)"
+				result="viewScope.beanMerHor" />
+			<render fragments="panelDialogos"></render>
+		</transition>
+
+		<transition on="eliminarMerHor">
+			<evaluate
+				expression="seleccionMercaHorMBean.eliminarMerHor(requestParameters.merhorEliminado,operacionConsultada.mercadosHorizontales)" />
+			<render fragments="panelTablaMerHor"></render>
+		</transition>
+
+		<transition on="procesarSeleccionUnidadEmpresaMerHor">
+			<render
+				fragments="codigoUnidadEmpresaMerHor,descUnidadEmpresaMerHor,panelFormMerHor" />
+			<evaluate
+				expression="unidadesEmpresaMBean.agregarUnidadEmpresa(simpleSelectionUnidadesEmpresaMerHor,listaUnidadEmpMerHor)"
+				result="viewScope.unidadEmpresaMerHorSeleccionada" />
+			<set name="beanMerHor.cdcenhor" value="unidadEmpresaMerHorSeleccionada.cdCencos" />
+			<set name="beanMerHor.dscenhor" value="unidadEmpresaMerHorSeleccionada.dsNomcen" />
+			<set name="beanMerHor.cdempcsc" value="operacionConsultada.codigoEmpresa" />
+			<set name="beanMerHor.cdreshor" value="unidadEmpresaMerHorSeleccionada.cdEmplea" />
+			<set name="beanMerHor.dsreshor" value="unidadEmpresaMerHorSeleccionada.dsEmplea" />
+			<evaluate expression="simpleSelectionUnidadesEmpresaMerHor.clear()" />
+		</transition>
+
+		<transition on="procesarSeleccionUnidadEmpresaHor">
+			<render
+				fragments="codigoUnidadEmpresaHor,descUnidadEmpresaHor,panelFormUnidEnt" />
+			<evaluate
+				expression="unidadesEmpresaMBean.agregarUnidadEmpresa(simpleSelectionUnidadesEmpresaHor,listaUnidadEmpHor)"
+				result="viewScope.unidadEmpresaHorSeleccionada" />
+			<set name="beanMerHor.cdcenhor" value="unidadEmpresaHorSeleccionada.cdCencos" />
+			<set name="beanMerHor.dscenhor" value="unidadEmpresaHorSeleccionada.dsNomcen" />
+			<set name="beanMerHor.cdempcsc" value="operacionConsultada.codigoEmpresa" />
+			<set name="beanMerHor.cdreshor" value="unidadEmpresaHorSeleccionada.cdEmplea" />
+			<set name="beanMerHor.dsreshor" value="unidadEmpresaHorSeleccionada.dsEmplea" />
+			<evaluate expression="simpleSelectionUnidadesEmpresaHor.clear()" />
+		</transition>
+		<!-- fin transiciones EP -->
+
+
+		<!-- VALORACION ECONOMICA - INICIO -->
+		<transition on="mostrarDetalleDesglosePrevisiones">
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('desglosePrevisiones')" />
+			<evaluate expression="desglosePrevisionesMBean.obtenerPlantillaExcel()"
+				result="plantillaExcel"></evaluate>
+			<evaluate
+				expression="desglosePrevisionesMBean.actualizarDesglosePrevisiones(operacionConsultada,desglosePrevisiones)"
+				result="desglosePrevisiones" />
+			<evaluate
+				expression="desglosePrevisionesMBean.cargarListaColumnas(listaColumnas,desglosePrevisiones)"
+				result="flowScope.listaColumnas" />
+			<evaluate expression="desglosePrevisionesMBean.cargarListaFilas(listaFilas)"
+				result="flowScope.listaFilas" />
+		</transition>
+
+		<transition on="repartir">
+			<evaluate
+				expression="desglosePrevisionesMBean.repartir(operacionConsultada,desglosePrevisiones)"
+				result="viewScope.mensaje"></evaluate>
+		</transition>
+		<transition on="agnadirDesglose">
+			<evaluate
+				expression="desglosePrevisionesMBean.agnadirDesglose(desglosePrevisiones,operacionConsultada)"
+				result="viewScope.mensaje"></evaluate>
+		</transition>
+
+		<transition on="abrirPopupAgnadirDesglose">
+			<set name="desglosePrevisiones.importeAgnadir" value="0"></set>
+		</transition>
+
+		<transition on="borrarMes">
+			<evaluate
+				expression="desglosePrevisionesMBean.borrarDesglose(desglosePrevisiones,requestParameters.anyo,requestParameters.mes)"></evaluate>
+			<set name="viewScope.mensaje" value="''"></set>
+		</transition>
+
+		<transition on="repetirCantidad">
+			<evaluate
+				expression="desglosePrevisionesMBean.repetirCantidad(operacionConsultada,desglosePrevisiones)"
+				result="viewScope.mensaje"></evaluate>
+		</transition>
+		<transition on="seleccionarDesglose">
+			<evaluate
+				expression="desglosePrevisionesMBean.seleccionarDesglose(desglosePrevisiones)"></evaluate>
+		</transition>
+		<transition on="seleccionarColumna">
+			<evaluate
+				expression="desglosePrevisionesMBean.seleccionarColumna(desglosePrevisiones)"></evaluate>
+		</transition>
+		<transition on="guardarPrevision">
+			<evaluate
+				expression="desglosePrevisionesMBean.guardarPrevision(operacionConsultada,desglosePrevisiones,externalContext.getApplicationMap().tablaLiterales)"></evaluate>
+			<evaluate
+				expression="operacionComercialMBean.cargarAcciones(operacionConsultada)"
+				result="conversationScope.listaAccionesPerm" />
+			<evaluate
+				expression="operacionComercialMBean.cargarRequisitosOperacion(operacionConsultada)"
+				result="conversationScope.requisitosOperacion"></evaluate>
+			<evaluate
+				expression="operacionComercialMBean.getValidacionOperacion(operacionConsultada)"
+				result="conversationScope.listaValidaciones" />
+			<render fragments="panelPipelinePrevisiones,panelCabecera"></render>
+		</transition>
+		<transition on="cancelarPrevision">
+		</transition>
+		<transition on="guardarCirculante" to="refrescarCabeceraOperacion">
+			<evaluate
+				expression="desglosePrevisionesMBean.guardarPrevision(operacionConsultada,desglosePrevisiones,externalContext.getApplicationMap().tablaLiterales)"></evaluate>
+			<!-- <evaluate expression="operacionComercialMBean.actualizarDatosComiteCirculane(operacionConsultada)" 
+				></evaluate> -->
+			<!-- <evaluate expression="operacionComercialMBean.cargarAcciones(operacionConsultada)" 
+				result="conversationScope.listaAccionesPerm"/> -->
+			<!-- <evaluate expression="operacionComercialMBean.cargarRequisitosOperacion(operacionConsultada)" 
+				result="conversationScope.requisitosOperacion" ></evaluate> -->
+			<!-- <evaluate expression="operacionComercialMBean.getValidacionOperacion(operacionConsultada)" 
+				result="conversationScope.listaValidaciones"/> -->
+			<evaluate
+				expression="operacionComercialMBean.actualizarIndicadorRequsitosCompletos(operacionConsultada)" />
+			<render fragments="panelPipelinePrevisiones,panelCabecera"></render>
+		</transition>
+		<transition on="cancelarCirculante">
+		</transition>
+		<transition on="descartarCambiosDesglose">
+			<evaluate result="desglosePrevisiones.actualizado"
+				expression="false" />
+		</transition>
+		<transition on="eliminarMensajeAlerta">
+			<set name="mensajeAlerta.mensaje" value="null" />
+		</transition>
+		<transition on="mostrarDetalleDesgloseCirculante">
+			<evaluate
+				expression="desglosePrevisionesMBean.actualizarDesgloseCirculante(operacionConsultada,desglosePrevisiones)"
+				result="desglosePrevisiones" />
+		</transition>
+
+		<transition on="actualizarImportes">
+			<evaluate
+				expression="operacionComercialMBean.actualizarImportes(operacionConsultada)"></evaluate>
+			<render
+				fragments="bDetalleDesglose,imgAvisoDesglosePrevisiones,cajaImporteEuros" />
+		</transition>
+
+		<!-- CARGA DE DATOS DEL EXCEL -->
+		<transition on="cargarDatosExcel">
+			<evaluate
+				expression="desglosePrevisionesMBean.actualizarDesglosePrevisionesExcel(ficheroUpload,operacionConsultada,desglosePrevisiones, mensajeAlerta)"
+				result="desglosePrevisiones" />
+		</transition>
+
+
+		<!-- VALORACION ECONOMICA - FIN -->
+
+
+		<transition on="agnadirMesesAdicionalesCobro">
+			<evaluate
+				expression="desglosePrevisionesMBean.agnadirDesglosesAdicionalesCobro(desglosePrevisiones,operacionConsultada)"></evaluate>
+		</transition>
+
+
+		<!-- Enlace con resumen de operación por el menú en caso de operación nueva -->
+		<transition on="detalleOperacion" to="detOperacion"></transition>
+
+		<transition on="cargarDatosFormAdicionales">
+			<set name="flowScope.listaCompetidores" value="competidores.listaCompetidores"></set>
+			<!-- obtenemos el area geografica -->
+			<evaluate
+				expression="seleccionGeograficaMBean.cargarListaAreasGeograficasPais(operacionConsultada.cdpaipro, confUsuarioBean.codIdioma)"
+				result="flowScope.listaAreasGeograficas" />
+			<set name="tabsCargados.adicionales" value="true" type="boolean" />
+		</transition>
+
+		<transition on="cargarDatosFormContrato">
+			<!-- carga la información referente a proveedores tecnologicos de la operacion -->
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.obtenerAllListaProveedores()"
+				result="flowScope.listaAllProveedoresTecnologicos" />
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.obtenerAllMapProveedores(listaAllProveedoresTecnologicos)"
+				result="flowScope.mapProveedores" />
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.actualizarTipoProveedoresOperacion(listaAllProveedoresTecnologicos,operacionConsultada)"
+				result="operacionConsultada" />
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.obtenerListaProveedoresActivos(operacionConsultada.proveedores,flowScope.listaAllProveedoresTecnologicos,null)"
+				result="viewScope.listaProveedoresActivos" />
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.obtenerListaProveedoresTipo(viewScope.listaProveedoresActivos,'1')"
+				result="viewScope.listaProveedoresPrincipal" />
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.obtenerProveedoresTecnologicos(viewScope.listaProveedoresPrincipal,listaProveedoresOperacion,operacionConsultada.proveedorOtros)"
+				result="operacionConsultada.listaProveedoresTecnologicos" />
+			<evaluate expression="operacionConsultada.listaProveedorOtros.clear()" />
+			<evaluate
+				expression="operacionConsultada.listaProveedorOtros.add(operacionConsultada.proveedorOtros)" />
+			<set name="tabsCargados.contrato" value="true" type="boolean" />
+		</transition>
+
+		<transition on="cargarDatosFormOportunidad">
+			<evaluate expression="operacionComercialMBean.cargarComboPaises()"
+				result="flowScope.listadoPaises" />
+			<evaluate
+				expression="operacionComercialMBean.isDatosAdicOperacionInternac(operacionConsultada)" />
+			<evaluate
+				expression="operacionComercialMBean.cargarSegmentosMercado(operacionConsultada)"
+				result="flowScope.listadoSegmentosMercado" />
+			<set name="tabsCargados.oportunidad" value="true" type="boolean" />
+		</transition>
+
+		<transition on="cargarDatosFormResuelta">
+
+
+		</transition>
+
+		<transition on="cargarDatosFormPresentada">
+			<set name="flowScope.listaCompetidores" value="competidores.listaCompetidores"></set>
+			<set name="tabsCargados.presentada" value="true" type="boolean" />
+		</transition>
+
+		<transition on="actualizarProveedoresTecnologicos">
+			<evaluate
+				expression="(operacionConsultada.requiereCompra!= null and 'S'.equals(operacionConsultada.requiereCompra))?operacionComercialMBean.obtenerProveedoresTecnologicos(operacionConsultada):seleccionProveedorTecnologicoMBean.inicializaProveedores()"
+				result="listaProveedoresOperacion" />
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.obtenerListaProveedoresVisibles(listaProveedoresOperacion,flowScope.listaAllProveedoresTecnologicos)"
+				result="viewScope.listaProveedoresActivos" />
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.obtenerListaProveedoresTipo(viewScope.listaProveedoresActivos,'1')"
+				result="viewScope.listaProveedoresPrincipal" />
+			<evaluate
+				expression="(operacionConsultada.requiereCompra!= null and 'S'.equals(operacionConsultada.requiereCompra))?operacionConsultada.proveedorOtros:seleccionProveedorTecnologicoMBean.inicializarProveedor()"
+				result="operacionConsultada.proveedorOtros" />
+			<evaluate
+				expression="seleccionProveedorTecnologicoMBean.obtenerProveedoresTecnologicos(viewScope.listaProveedoresPrincipal,listaProveedoresOperacion,operacionConsultada.proveedorOtros)"
+				result="operacionConsultada.listaProveedoresTecnologicos" />
+			<evaluate expression="operacionConsultada.listaProveedorOtros.clear()" />
+			<evaluate
+				expression="operacionConsultada.listaProveedorOtros.add(operacionConsultada.proveedorOtros)" />
+		</transition>
+
+		<transition on="actualizarMercadosHorizontales">
+			<evaluate
+				expression="operacionComercialMBean.eliminarMercadosHorizontales(operacionConsultada)"></evaluate>
+		</transition>
+
+		<transition on="actualizarCompetidores">
+			<evaluate
+				expression="operacionComercialMBean.eliminarCompetidores(operacionConsultada)"></evaluate>
+		</transition>
+
+		<transition on="actualizarFlagFechaEntrega">
+			<evaluate
+				expression="operacionComercialMBean.actualizarFlagFechaEntrega(operacionConsultada)"></evaluate>
+		</transition>
+
+		<transition on="actualizarFlagFechaRecepcion">
+			<evaluate
+				expression="operacionComercialMBean.actualizarFlagFechaRecepcion(operacionConsultada)"></evaluate>
+		</transition>
+
+
+		<!-- Transiciones popup unidades de empresa -->
+		<transition on="cargarUnidadEmpresa">
+			<set name="viewScope.tokenConValidacion" value="'S'"></set>
+			<set name="criteriosBusquedaUnidadesEmpresa.codEmpresa" value="operacionConsultada.codigoEmpresa"></set>
+			<evaluate
+				expression="unidadesEmpresaMBean.cargarUnidadesEmpresa(arbolUnidadesEmpresa, criteriosBusquedaUnidadesEmpresa)" />
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('arbolUnidadesEmpresa')" />
+			<render fragments="panelDialogos" />
+		</transition>
+		<transition on="procesarSeleccionUnidadEmpresa">
+			<render
+				fragments="codigoUnidadEmpresa,empresa,descUnidadEmpresa,codigoMercado,textoMercado,codempresa,:detalleOperacionForm:vistaTabRequeridosOportunidad:listaSegmentosMercado,panelDatosIdentificativos,:detalleOperacionForm:vistaTabRequeridosOportunidad:panelListaSegmentosMercado" />
+
+			<set name="viewScope.unidadEmpresaSeleccionada" value="arbolUnidadesEmpresa.nodoSeleccionado" />
+			<set name="operacionConsultada.codigoUnidadEmpresa" value="unidadEmpresaSeleccionada.cdCencos" />
+			<set name="operacionConsultada.descUnidadEmpresa" value="unidadEmpresaSeleccionada.dsNomcen" />
+			<set name="operacionConsultada.codigoEmpresa" value="criteriosBusquedaUnidadesEmpresa.codEmpresa" />
+			<set name="operacionConsultada.codigoMercado" value="unidadEmpresaSeleccionada.cdMerorg" />
+			<set name="operacionConsultada.mercado" value="unidadEmpresaSeleccionada.dsMerorg" />
+			<evaluate
+				expression="operacionComercialMBean.isDatosAdicOperacionInternac(operacionConsultada)" />
+			<evaluate
+				expression="operacionComercialMBean.cargarSegmentosMercado(operacionConsultada)"
+				result="viewScope.listadoSegmentosMercado"></evaluate>
+			<!-- <evaluate expression="operacionComercialMBean.obtenerParametrosEmpresaMercado(operacionConsultada.codigoEmpresa,operacionConsultada.codigoMercado)" 
+				result="mapConfigEmpresaMercado"/> -->
+		</transition>
+
+		<transition on="validarSeleccionUnidadEmpresa">
+			<evaluate
+				expression="unidadesEmpresaMBean.getValidacionMercadoGlobalDeUnidadEmpresa(arbolUnidadesEmpresa.nodoSeleccionado, operacionConsultada.codMercadoGlobal)"
+				result="viewScope.seleccionUnidadEmpresaValida" />
+		</transition>
+
+		<transition on="validarProcesarCambiosOferta">
+			<evaluate
+				expression="operacionComercialMBean.validarProcesarDatosServicios(operacionConsultada)"
+				result="viewScope.mensajeErrorEstimaciones" />
+			<render fragments="panelDialogos"></render>
+		</transition>
+
+		<transition on="habilitarDialogoCambiosOfertaEstimaciones">
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('avisoCambiosOfertaEstimaciones')" />
+		</transition>
+
+		<transition on="limpiarMensajesError">
+			<evaluate expression="listaErrores.clear()" />
+			<evaluate expression="listaErroresInfoPaises.clear()" />
+			<set name="operacionConsultada.clickValoracion" value="false"
+				type="boolean"></set>
+		</transition>
+
+		<transition on="limpiarClickValCF">
+			<set name="operacionConsultada.clickValoracion" value="false"
+				type="boolean"></set>
+			<set name="operacionConsultada.clickCashflowExtendido" value="false"
+				type="boolean"></set>
+			<set name="operacionConsultada.clickCashflowReducido" value="false"
+				type="boolean"></set>
+			<set name="flowScope.requisitoDetOperacion" value="''"></set>
+		</transition>
+
+
+		<!-- CONTRATOS MARCO -->
+		<!-- Transicion al abrir el popup de busqueda de contratos marco -->
+		<transition on="inicializarCMarco">
+			<set name="viewScope.listaContratosMarco" value="null" />
+			<set name="criteriosBusquedaContratosMarco.codigoContMarco"
+				value="null" />
+			<set name="criteriosBusquedaContratosMarco.descContMarco" value="null" />
+			<set name="criteriosBusquedaContratosMarco.codigoMetacliente"
+				value="operacionConsultada.codMetaCliente" />
+			<set name="criteriosBusquedaContratosMarco.descMetacliente"
+				value="operacionConsultada.descMetaCliente" />
+			<evaluate
+				expression="contratoMarcoMBean.asignarMercadoGlobalDeAsociacionOperacionCMarco(criteriosBusquedaContratosMarco, operacionConsultada)" />
+			<evaluate
+				expression="operacionComercialMBean.cargaDescripcionMercadoGlobal(criteriosBusquedaContratosMarco)" />
+			<set name="criteriosBusquedaContratosMarco.listaCMarco" value="operacionConsultada.contratosMarco" />
+			<evaluate
+				expression="contratoMarcoMBean.buscarContratosMarco(criteriosBusquedaContratosMarco)"
+				result="viewScope.listaContratosMarco" />
+			<evaluate expression="simpleSelectionContratoMarco.clear()" />
+			<set name="viewScope.mostrarAceptarCMarco" value="false" type="boolean" />
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('busquedaContratosMarco')" />
+			<render fragments="panelDialogos" />
+		</transition>
+
+		<!-- Popup Busqueda Contratos Marco: transicion al realizar una busqueda -->
+		<transition on="buscarContratoMarco">
+			<set name="criteriosBusquedaContratosMarco.listaCMarco" value="operacionConsultada.contratosMarco" />
+			<evaluate
+				expression="contratoMarcoMBean.buscarContratosMarco(criteriosBusquedaContratosMarco)"
+				result="viewScope.listaContratosMarco" />
+			<evaluate expression="simpleSelectionContratoMarco.clear()" />
+			<set name="viewScope.mostrarAceptarCMarco" value="false" type="boolean" />
+			<render fragments="tablaContratosMarco" />
+		</transition>
+
+		<transition on="actualizarBotonAceptarCMarco">
+			<set name="viewScope.mostrarAceptarCMarco" value="true" type="boolean" />
+		</transition>
+
+		<transition on="consultarCMarco">
+			<evaluate expression="contratoMarcoMBean.cargarMercadosGlobales()"
+				result="listaMercadoGlobal" />
+			<evaluate
+				expression="contratoMarcoMBean.inicializarContratoMarco(requestParameters.cmarcoConsultado)"
+				result="viewScope.contratoMarco" />
+			<set name="viewScope.contratoMarco.editable" value="false" type="boolean" />
+			<set name="idContrato.contractCode" value="viewScope.contratoMarco.codigoContMarco" />
+			<evaluate
+				expression="documentacionContractualMBean.getSoporteDocumental(idContrato)"
+				result="soporteDocumentalContMarco" />
+			<set name="soporteDocumentalContMarco.editable" value="false"
+				type="boolean" />
+		</transition>
+
+		<transition on="eliminarCMarco">
+			<evaluate
+				expression="contratoMarcoMBean.eliminarContratoMarco(requestParameters.cmarcoEliminado,operacionConsultada.contratosMarco)" />
+			<render fragments="listaContratosMarco, panelDatosIdentificativos" />
+		</transition>
+
+		<transition on="agregarContratoMarco">
+			<evaluate
+				expression="contratoMarcoMBean.agregarContratoMarco(simpleSelectionContratoMarco,operacionConsultada.contratosMarco,listaContratosMarco)" />
+			<render fragments="listaContratosMarco, panelDatosIdentificativos" />
+		</transition>
+
+		<!-- Detalle de documento contrato marco -->
+		<transition on="cargarDocumentoContMarco">
+			<!-- <evaluate expression="errores.clear()"/> -->
+			<evaluate
+				expression="documentacionContractualMBean.getDocumentoContractual(soporteDocumentalContMarco, requestParameters.nombreFichero)"
+				result="documentoContrato" />
+			<evaluate
+				expression="documentacionContractualMBean.ampliarDatosResponsableDocumento(documentoContrato)"
+				result="documentoContrato" />
+			<set name="documentoContrato.editable" value="false" type="boolean" />
+			<evaluate
+				expression="documentacionContractualMBean.getListaArchivosPorPais(flowScope.listaArchivos, null)"
+				result="flowScope.listaArchivos" />
+			<evaluate
+				expression="documentacionContractualMBean.existeArchivoIndra(flowScope.listaArchivos, documentoContrato.archive)"
+				result="viewScope.listaArchivoDocumento" />
+		</transition>
+
+		<!-- Descarga de documento contrato marco -->
+		<transition on="downloadDocumentoContrato">
+			<evaluate
+				expression="documentacionContractualMBean.downloadDocumento(externalContext, documentoContrato, clientDate)"
+				result="viewScope.urlDocumentoContractual" />
+		</transition>
+
+		<!-- SOLICITUD ASOCIACIÓN METACLIENTE/CLIENTE -->
+
+		<transition on="abrirAsociacionClienteMetaCliente">
+			<evaluate
+				expression="seleccionClienteMBean.cargarDatosAsociacionClienteMetaCliente(operacionConsultada.codigoCliente)"
+				result="viewScope.solicitudAsociMetaClienteClienteBean" />
+			<evaluate
+				expression="seleccionClienteMBean.getMensajeInformativoAsociacionClienteMetaCliente(operacionConsultada.descripcionCliente)"
+				result="viewScope.mensajesInformativoAsociacionClienteMetaCliente" />
+			<render fragments="panelSolicAsocMetaClienteCliente" />
+		</transition>
+
+		<transition on="solicitarAsociacionClienteMetaCliente">
+			<evaluate
+				expression="seleccionClienteMBean.enviarSolicitudAsociaClienteMetaCliente(viewScope.solicitudAsociMetaClienteClienteBean)" />
+		</transition>
+
+		<transition on="seleccionarMetaCliente">
+			<!-- Setear valores en bean de contrato marco -->
+			<evaluate
+				expression="seleccionClienteMBean.seleccionarMetaCliente(metaClientesSelectionModel, viewScope.listaMetaClientes)"
+				result="viewScope.metaClienteSeleccionado" />
+			<!-- <set name="viewScope.solicitudAsociMetaClienteClienteBean.codMetacliente" 
+				value="viewScope.metaClienteSeleccionado.codMetaCliente" type="string"/> -->
+			<set name="viewScope.solicitudAsociMetaClienteClienteBean.descMetaCliente"
+				value="viewScope.metaClienteSeleccionado.descMetaCliente" type="string" />
+			<render fragments="descMetaClienteAsociar" />
+		</transition>
+		<transition on="borrarMetaClienteSeleccionado">
+			<!-- <set name="viewScope.solicitudAsociMetaClienteClienteBean.codMetacliente" 
+				value="''" type="string"/> -->
+			<set name="viewScope.solicitudAsociMetaClienteClienteBean.descMetaCliente"
+				value="''" type="string" />
+			<render fragments="descMetaClienteAsociar" />
+		</transition>
+
+		<!-- Prealta de metaclientes -->
+		<transition on="abrirAltaMetaCliente">
+			<evaluate expression="seleccionClienteMBean.cargarDatosAltaMetaCliente()"
+				result="viewScope.altaMetaClienteBean" />
+			<render fragments="mostrarAltaMetaClientePopup" />
+		</transition>
+
+		<transition on="guardarAltaMetaCliente">
+			<evaluate
+				expression="seleccionClienteMBean.guardarPreAltaMetaCliente(altaMetaClienteBean)" />
+			<evaluate expression="metaClientesSelectionModel.clear()" />
+			<set name="criteriosBusquedaMetaCliente.descMetaCliente" value="altaMetaClienteBean.descMetaCliente"></set>
+			<evaluate
+				expression="seleccionClienteMBean.buscarMetaClientes(criteriosBusquedaMetaCliente)"
+				result="viewScope.listaMetaClientes" />
+			<render
+				fragments="formPopupMetaClientes:tablaMetaClientes, formPopupMetaClientes:descripcion" />
+		</transition>
+
+		<!-- Búsqueda y selección de metaclientes -->
+		<transition on="cargarDialogoBusquedaMetaClientes">
+			<set name="flowScope.mostrarAceptarMetaCliente" value="false"
+				type="boolean" />
+			<evaluate expression="metaClientesSelectionModel.clear()" />
+			<set name="criteriosBusquedaMetaCliente.descMetaCliente" value="''" />
+			<set name="viewScope.listaMetaClientes" value="null" />
+
+			<render
+				fragments="formPopupMetaClientes:tablaMetaClientes, formPopupMetaClientes:botonSolicitarAltaMetaCliente" />
+		</transition>
+
+		<transition on="buscarMetaClientes">
+			<evaluate
+				expression="seleccionClienteMBean.buscarMetaClientes(criteriosBusquedaMetaCliente)"
+				result="viewScope.listaMetaClientes" />
+			<evaluate expression="metaClientesSelectionModel.clear()"></evaluate>
+			<render fragments="tablaMetaClientes, botonSolicitarAltaMetaCliente" />
+		</transition>
+
+		<transition on="actualizarBotonAceptarMetaCliente">
+			<set name="flowScope.mostrarAceptarMetaCliente" value="true"
+				type="boolean"></set>
+		</transition>
+		<!-- SOLICITUD ASOCIACIÓN METACLIENTE/CLIENTE -FIN- -->
+
+		<!-- Estructura global principal -->
+		<transition on="crearOtroPais">
+			<evaluate
+				expression="operacionComercialMBean.inicializarInfoPais(operacionConsultada.listaInfoOtrosPaises,mapaInfoPaises,flowScope.numInfoPais)"
+				result="flowScope.numInfoPais" />
+			<evaluate expression="operacionComercialMBean.inicializarMoneda()"
+				result="beanMonedaSel" />
+			<render fragments="panelUE" />
+		</transition>
+		<transition on="eliminarInfoPais">
+			<evaluate
+				expression="operacionComercialMBean.eliminarInfoPais(operacionConsultada.listaInfoOtrosPaises,mapaInfoPaises,requestParameters.infoPaisPos)" />
+		</transition>
+		<!-- UNIDADES ENTREGA -->
+		<transition on="inicializarUnidEnt">
+			<evaluate expression="seleccionUnidEntMBean.inicializarUnidEnt()"
+				result="beanMerHor" />
+			<evaluate expression="mapaInfoPaises.get(requestParameters.infoPaisPos)"
+				result="infoPaisActual" />
+			<evaluate
+				expression="seleccionUnidEntMBean.buscarUnidadesEnt(operacionConsultada,infoPaisActual)"
+				result="viewScope.listadoMerHor"></evaluate>
+			<evaluate
+				expression="seleccionUnidEntMBean.tieneUnidadesEmpresaHor(operacionConsultada.codigoEmpresa, infoPaisActual)"
+				result="viewScope.hayUndidadEmpHor"></evaluate>
+			<evaluate
+				expression="seleccionUnidEntMBean.tieneUnidadesEmpresaHor(operacionConsultada.codigoEmpresa, viewScope.listadoMerHor.get(0).cdMerHor, infoPaisActual)"
+				result="viewScope.hayUndidadEmpMerHor"></evaluate>
+			<!--<evaluate expression="viewScope.listadoMerHor.get(0).inGlobal" result="beanMerHor.inglobal"/> -->
+			<set name="beanMerHor.inglobal" value="viewScope.listadoMerHor.get(0).inGlobal" />
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('unidadesEntrega')" />
+			<render fragments="panelDialogos,panelTablaUnidEnt" />
+		</transition>
+		<transition on="comprobarUnidEmpresaHor">
+			<evaluate
+				expression="seleccionUnidEntMBean.tieneUnidadesEmpresaHor(operacionConsultada.codigoEmpresa, beanMerHor.cdmerhor, infoPaisActual)"
+				result="viewScope.hayUndidadEmpMerHor"></evaluate>
+			<set name="beanMerHor.inglobal" value="requestParameters.inGlobalParam" />
+			<set name="beanMerHor.cdcenhor" value="''" />
+			<set name="beanMerHor.dscenhor" value="''" />
+			<set name="beanMerHor.cdreshor" value="''" />
+			<set name="beanMerHor.dsreshor" value="''" />
+		</transition>
+		<transition on="cargarDatosUnidEmpresaHor">
+			<set name="beanMerHor.dscenhor" value="null" />
+			<evaluate
+				expression="seleccionUnidEntMBean.buscarUnidadEmpresaHor(operacionConsultada.codigoEmpresa, beanMerHor.cdmerhor, beanMerHor.cdcenhor)"
+				result="viewScope.unidadEmpresaSeleccionada" />
+			<set name="beanMerHor.cdcenhor" value="viewScope.unidadEmpresaSeleccionada.cdCencos" />
+			<set name="beanMerHor.dscenhor" value="viewScope.unidadEmpresaSeleccionada.dsNomcen" />
+			<set name="beanMerHor.cdreshor" value="viewScope.unidadEmpresaSeleccionada.cdEmplea" />
+			<set name="beanMerHor.dsreshor" value="viewScope.unidadEmpresaSeleccionada.dsEmplea" />
+		</transition>
+		<transition on="actualizarBotonAceptarResponsableUE">
+			<set name="flowScope.mostrarAceptarResponsableUE" value="true"
+				type="boolean"></set>
+		</transition>
+		<transition on="cargarDatosResponsableUE">
+			<set name="beanMerHor.dsreshor" value="null" />
+			<evaluate expression="seleccionUsuarioMBean.buscarUsuario(beanMerHor.cdreshor)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="beanMerHor.cdreshor" value="viewScope.responsableSeleccionado.codEmpleado" />
+			<set name="beanMerHor.dsreshor" value="viewScope.responsableSeleccionado.desEmpleado" />
+		</transition>
+		<transition on="cargarResponsable">
+			<evaluate
+				expression="seleccionUnidEntMBean.cargarResponsableUniEnt(viewScope.listadoMerHor,beanMerHor)" />
+			<evaluate expression="seleccionUsuarioMBean.buscarUsuario(beanMerHor.cdreshor)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="beanMerHor.cdreshor" value="viewScope.responsableSeleccionado.codEmpleado" />
+			<set name="beanMerHor.dsreshor" value="viewScope.responsableSeleccionado.desEmpleado" />
+		</transition>
+		<transition on="aceptarUnidEnt">
+			<evaluate
+				expression="seleccionUnidEntMBean.aceptarUnidEnt(beanMerHor,infoPaisActual,operacionConsultada,listadoMerHor)" />
+			<render fragments="panelTablaUnidEnt" />
+		</transition>
+		<transition on="iniciarBusquedaResponsableUnidEnt">
+			<set name="flowScope.mostrarAceptarResponsableUE" value="false"
+				type="boolean"></set>
+			<render fragments="contenedorBusquedaResponsableUnidEnt" />
+			<set name="viewScope.listaUsuarios" value="null" />
+			<set name="criteriosBusquedaResponsable.descripcion" value="null" />
+			<set name="criteriosBusquedaResponsable.codigo" value="null" />
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogoAnidado('busquedaResponsableUnidEnt')" />
+		</transition>
+		<transition on="buscarUsuariosUnidEnt">
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuarios(criteriosBusquedaResponsable)"
+				result="viewScope.listaUsuarios" />
+			<evaluate expression="usuarioSelectionMerHor.clear()" />
+			<render fragments="formBusquedaResponsablesUnidEnt:tablaResponsablesUnidEnt" />
+		</transition>
+		<transition on="aceptarResponsableUnidEnt">
+			<evaluate
+				expression="seleccionUsuarioMBean.aceptarUsuario(usuarioSelectionMerHor,viewScope.listaUsuarios)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="beanMerHor.cdreshor" value="viewScope.responsableSeleccionado.codEmpleado" />
+			<set name="beanMerHor.dsreshor" value="viewScope.responsableSeleccionado.desEmpleado" />
+			<evaluate expression="usuarioSelectionMerHor.clear()" />
+			<render fragments="panelFormUnidEnt" />
+		</transition>
+
+		<transition on="actualizarUnidadesEntregaPpal">
+			<evaluate
+				expression="operacionComercialMBean.eliminarUnidadesEntregaPpal(operacionConsultada)" />
+			<evaluate
+				expression="operacionComercialMBean.establecerLiderEntrega(null,operacionConsultada)" />
+		</transition>
+		<transition on="actualizarUnidadesEntrega">
+			<evaluate
+				expression="operacionComercialMBean.obtenerInfoPais(mapaInfoPaises,requestParameters.infoPaisPos)"
+				result="infoPaisActual" />
+			<evaluate
+				expression="operacionComercialMBean.eliminarUnidadesEntrega(infoPaisActual)" />
+			<evaluate
+				expression="operacionComercialMBean.establecerLiderEntrega(infoPaisActual,operacionConsultada)" />
+		</transition>
+		<transition on="eliminarUnidadEntrega">
+			<evaluate
+				expression="operacionComercialMBean.obtenerInfoPais(mapaInfoPaises,requestParameters.infoPaisPos)"
+				result="infoPaisActual" />
+			<evaluate
+				expression="seleccionUnidEntMBean.eliminarUnidEnt(requestParameters.unidadEntEliminada,infoPaisActual,operacionConsultada)" />
+		</transition>
+		<!-- FIN UNIDADES ENTREGA -->
+		<!-- UNIDADES PRODUCCION/FABRICACION -->
+		<transition on="inicializarUnidProd">
+			<evaluate expression="seleccionUnidProdMBean.inicializarUnidProd()"
+				result="beanUniProd" />
+			<evaluate expression="mapaInfoPaises.get(requestParameters.infoPaisPos)"
+				result="infoPaisActual" />
+			<evaluate expression="seleccionUnidProdMBean.buscarUnidProd()"
+				result="viewScope.listadoUniProd"></evaluate>
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('unidadesProduccion')" />
+			<render fragments="panelDialogos,panelTablaUnidProd" />
+		</transition>
+		<transition on="actualizarBotonAceptarResponsableUP">
+			<set name="flowScope.mostrarAceptarResponsableUP" value="true"
+				type="boolean"></set>
+		</transition>
+		<transition on="cargarDatosResponsableUP">
+			<set name="beanUniProd.dsresuniprod" value="null" />
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuario(beanUniProd.cdresuniprod)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="beanUniProd.cdresuniprod" value="viewScope.responsableSeleccionado.codEmpleado" />
+			<set name="beanUniProd.dsresuniprod" value="viewScope.responsableSeleccionado.desEmpleado" />
+		</transition>
+		<transition on="cargarResponsableUniProd">
+			<evaluate
+				expression="seleccionUnidProdMBean.cargarResponsableUniProd(viewScope.listadoUniProd,beanUniProd)" />
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuario(beanUniProd.cdresuniprod)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="beanUniProd.cdresuniprod" value="viewScope.responsableSeleccionado.codEmpleado" />
+			<set name="beanUniProd.dsresuniprod" value="viewScope.responsableSeleccionado.desEmpleado" />
+		</transition>
+		<transition on="aceptarUnidProd">
+			<evaluate
+				expression="seleccionUnidProdMBean.aceptarUnidProd(beanUniProd,infoPaisActual,operacionConsultada,listadoUniProd)" />
+			<render fragments="panelTablaUnidProd" />
+		</transition>
+		<transition on="iniciarBusquedaResponsableUnidProd">
+			<set name="flowScope.mostrarAceptarResponsableUP" value="false"
+				type="boolean"></set>
+			<render fragments="contenedorBusquedaResponsableUnidProd" />
+			<set name="viewScope.listaUsuarios" value="null" />
+			<set name="criteriosBusquedaResponsable.descripcion" value="null" />
+			<set name="criteriosBusquedaResponsable.codigo" value="null" />
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogoAnidado('busquedaResponsableUnidProd')" />
+		</transition>
+		<transition on="buscarUsuariosUnidProd">
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuarios(criteriosBusquedaResponsable)"
+				result="viewScope.listaUsuarios" />
+			<evaluate expression="usuarioSelectionUnidProd.clear()" />
+			<render fragments="formBusquedaResponsablesUnidProd:tablaResponsablesUnidProd" />
+		</transition>
+		<transition on="aceptarResponsableUnidProd">
+			<evaluate
+				expression="seleccionUsuarioMBean.aceptarUsuario(usuarioSelectionUnidProd,viewScope.listaUsuarios)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="beanUniProd.cdresuniprod" value="viewScope.responsableSeleccionado.codEmpleado" />
+			<set name="beanUniProd.dsresuniprod" value="viewScope.responsableSeleccionado.desEmpleado" />
+			<evaluate expression="usuarioSelectionUnidProd.clear()" />
+			<render fragments="panelFormUnidProd" />
+		</transition>
+		<transition on="actualizarUnidadesProduccionPpal">
+			<evaluate
+				expression="operacionComercialMBean.eliminarUnidadesProduccionPpal(operacionConsultada)" />
+		</transition>
+		<transition on="actualizarUnidadesProduccion">
+			<evaluate
+				expression="operacionComercialMBean.obtenerInfoPais(mapaInfoPaises,requestParameters.infoPaisPos)"
+				result="infoPaisActual" />
+			<evaluate
+				expression="operacionComercialMBean.eliminarUnidadesProduccion(infoPaisActual)" />
+		</transition>
+		<transition on="eliminarUnidadProduccion">
+			<evaluate
+				expression="operacionComercialMBean.obtenerInfoPais(mapaInfoPaises,requestParameters.infoPaisPos)"
+				result="infoPaisActual" />
+			<evaluate
+				expression="seleccionUnidProdMBean.eliminarUnidProd(requestParameters.unidadProdEliminada,infoPaisActual,operacionConsultada)" />
+		</transition>
+		<!-- FIN UNIDADES PRODUCCION -->
+		<!-- COBROS -->
+		<transition on="actualizarCobrosPpal">
+			<evaluate
+				expression="operacionComercialMBean.eliminarCobrosPpal(operacionConsultada)" />
+			<evaluate expression="operacionComercialMBean.inicializarMoneda()"
+				result="beanMonedaSel" />
+		</transition>
+		<transition on="actualizarCobros">
+			<evaluate
+				expression="operacionComercialMBean.obtenerInfoPais(mapaInfoPaises,requestParameters.infoPaisPos)"
+				result="infoPaisActual" />
+			<evaluate expression="operacionComercialMBean.eliminarCobros(infoPaisActual)" />
+			<evaluate expression="operacionComercialMBean.inicializarMoneda()"
+				result="beanMonedaSel" />
+		</transition>
+		<transition on="aceptarMoneda">
+			<evaluate
+				expression="operacionComercialMBean.obtenerInfoPais(mapaInfoPaises,requestParameters.infoPaisPos)"
+				result="infoPaisActual" />
+			<evaluate expression="operacionComercialMBean.inicializarMoneda()"
+				result="beanMoneda" />
+			<set name="beanMoneda.cdMoneda" value="beanMonedaSel.cdMoneda" />
+			<set name="beanMonedaSel.cdMoneda" value="''" />
+			<evaluate
+				expression="operacionComercialMBean.aceptarMoneda(beanMoneda,infoPaisActual,operacionConsultada,viewScope.listaDivisas)" />
+		</transition>
+		<transition on="eliminarMoneda">
+			<evaluate
+				expression="operacionComercialMBean.obtenerInfoPais(mapaInfoPaises,requestParameters.infoPaisPos)"
+				result="infoPaisActual" />
+			<evaluate
+				expression="operacionComercialMBean.eliminarMoneda(requestParameters.monedaEliminada,infoPaisActual,operacionConsultada)" />
+			<set name="beanMonedaSel.cdMoneda" value="''" />
+		</transition>
+		<!-- FIN COBROS -->
+		<transition on="actualizarCheckComprasPpal">
+			<evaluate
+				expression="operacionComercialMBean.inicializarCheckComprasPpal(operacionConsultada)" />
+		</transition>
+		<transition on="actualizarCheckCompras">
+			<evaluate
+				expression="operacionComercialMBean.obtenerInfoPais(mapaInfoPaises,requestParameters.infoPaisPos)"
+				result="infoPaisActual" />
+			<evaluate
+				expression="operacionComercialMBean.inicializarCheckCompras(infoPaisActual)" />
+		</transition>
+		<!-- Fin estructura global -->
+
+		<!-- ACCESO A REQUISITOS CASHFLOW Y VALORACION RIESGO DESDE FICHA DE OPORTUNIDAD -->
+		<transition on="cargarUploadFilePopupCashFlow">
+			<render fragments="panelDialogos,panelMensajesError" />
+			<set name="viewScope.idRequisito" value="requestParameters.idRequisito"></set>
+			<!-- Añadido nuevo cargarTipoInteres -->
+			<evaluate expression="ficheroUpload.reset()"></evaluate>
+			<evaluate
+				expression="operacionComercialMBean.cargarTipoInteres(operacionConsultada.cdpaisemp)"
+				result="tipoInteresSeleccionado"></evaluate>
+			<evaluate
+				expression="operacionComercialMBean.cargarDatosRequisito(conversationScope.requisitosOperacion,viewScope.idRequisito,operacionConsultada)"
+				result="flowScope.requisitoSeleccionado" />
+			<evaluate
+				expression="operacionComercialMBean.cargarDatosComite(operacionConsultada)"></evaluate>
+			<set name="flowScope.ofertaSeleccionada" value="operacionConsultada.datosComite.ofertaBandejaBean"></set>
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('cashFlow')" />
+			<evaluate expression="listaErrores.clear()" />
+			<evaluate expression="listaErroresInfoPaises.clear()" />
+			<set name="flowScope.requisitoDetOperacion" value="''"></set>
+			<set name="operacionConsultada.clickCashflowExtendido" value="false"
+				type="boolean"></set>
+		</transition>
+
+		<transition on="cargarPopupCashFlowReducido">
+			<render fragments="panelDialogos,panelMensajesError" />
+			<set name="viewScope.idRequisito" value="requestParameters.idRequisito"></set>
+			<evaluate expression="listaErrores.clear()" />
+			<evaluate expression="listaErroresInfoPaises.clear()" />
+			<set name="flowScope.requisitoDetOperacion" value="''"></set>
+			<set name="operacionConsultada.clickCashflowReducido" value="false"
+				type="boolean"></set>
+			<!-- Añadido nuevo cargarTipoInteres -->
+			<!-- <evaluate expression="operacionComercialMBean.cargarTipoInteres(operacionConsultada.cdpaisemp)" 
+				result="tipoInteresSeleccionado"></evaluate> -->
+			<!-- <evaluate expression="operacionComercialMBean.cargarDatosRequisito(conversationScope.requisitosOperacion,viewScope.idRequisito,operacionConsultada)" 
+				result="viewScope.requisitoSeleccionado" /> -->
+			<evaluate
+				expression="operacionComercialMBean.cargarDatosComite(operacionConsultada)"></evaluate>
+			<set name="flowScope.ofertaSeleccionada" value="operacionConsultada.datosComite.ofertaBandejaBean"></set>
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('cashFlowReducido')" />
+		</transition>
+
+		<transition on="aceptarCashFlow" to="refrescarCabeceraOperacion">
+			<set name="flowScope.requisitoDetOperacion" value="''"></set>
+			<evaluate
+				expression="operacionComercialMBean.guardarCashFlow(requisitoSeleccionado, ficheroUpload, flowScope.ofertaSeleccionada)" />
+			<!-- <evaluate expression="operacionComercialMBean.cargarDetallesOperacionDespuesCashFlow(operacionConsultada)"/> -->
+			<evaluate
+				expression="operacionComercialMBean.cargarDetallesOperacion(codOperacion,verOperacion,ampOperacion)"
+				result="operacionConsultada" />
+			<evaluate
+				expression="operacionComercialMBean.actualizarIndicadorRequsitosCompletos(operacionConsultada)" />
+		</transition>
+
+		<transition on="aceptarCashFlowReducido" to="refrescarCabeceraOperacion">
+			<set name="flowScope.requisitoDetOperacion" value="''"></set>
+			<evaluate
+				expression="operacionComercialMBean.guardarCashFlowReducido(flowScope.ofertaSeleccionada)" />
+			<evaluate
+				expression="operacionComercialMBean.actualizarIndicadorRequsitosCompletos(operacionConsultada)" />
+		</transition>
+
+		<!-- Borrado lógico de documento de cashflow -->
+		<transition on="eliminarDocumentoCahsFlow">
+			<evaluate
+				expression="operacionComercialMBean.borradoLogicoDocumentoCashFlow(requisitoSeleccionado, ficheroUpload)" />
+		</transition>
+
+		<transition on="validarCashFlow">
+			<evaluate
+				expression="operacionComercialMBean.validarDatosCashFlow(flowScope.ofertaSeleccionada, requisitoSeleccionado, ficheroUpload, listaErrores)"></evaluate>
+			<render
+				fragments="inputMaxPicoDPFCashFlow,inputCosteCirculante,inputCobroPeriodoMedio,inputMesesCashFlowNegativo,inputCirculantePromedio,panelMensajesError,panelDocumentoCashFlow,valoresInteres" />
+		</transition>
+
+		<transition on="resetearRequisitoCF">
+			<set name="flowScope.requisitoDetOperacion" value="''"></set>
+		</transition>
+
+		<transition on="downloadDocumentoOferta">
+			<!-- <evaluate expression="operacionComercialMBean.downloadDocumento(externalContext, 
+				viewScope.documentoContrato, clientDate)" result="viewScope.urlDocumentoContractual"/> -->
+			<evaluate
+				expression="operacionComercialMBean.downloadDocumento(externalContext, requestParameters.codDocumento, requestParameters.urlSGD, requestParameters.nombreFichero)"
+				result="viewScope.urlDocumentoOferta" />
+		</transition>
+
+		<!-- Descarga de documento subido "al vuelo" -->
+		<transition on="descargarDocumentoFileUploadBean">
+			<evaluate
+				expression="operacionComercialMBean.getUrlDescargaFileUploadBean(externalContext, ficheroUpload)"
+				result="viewScope.urlFileUploadBean" />
+		</transition>
+
+		<!-- Subir documento -->
+		<transition on="subirFichero">
+			<evaluate
+				expression="operacionComercialMBean.subirFichero(requisitoSeleccionado, ficheroUpload)" />
+			<render
+				fragments="panelLinkDescarga,panelPopupMensajeBorradoDocCahsFlow,panelDocumentoCashFlow,valoresInteres"></render>
+		</transition>
+
+		<!-- Seleccionar pais en el popup de cash flow en requisitos -->
+		<transition on="mostrarTipoInteresPais">
+			<evaluate
+				expression="operacionComercialMBean.cargarTipoInteres(tipoInteresSeleccionado.cdPaises)"
+				result="tipoInteresSeleccionado"></evaluate>
+		</transition>
+
+		<!-- ACCESO A REQUISITOS CASHFLOW Y VALORACION RIESGO DESDE FICHA DE OPORTUNIDAD 
+			- FIN -->
+
+		<!-- GESTION TAB COMPROMISOS - INICIO -->
+		<transition on="addCompromiso">
+			<evaluate
+				expression="operacionComercialMBean.validarCompromisoConMensaje(mensajeCompromisoIndividual,compromisoContrato, operacionConsultada)"
+				result="viewScope.resultadoValidacionCompromisoIndividual" />
+			<!-- <evaluate expression="compromisosContratoMBean.tratamientoCompromiso(compromisoContrato)"/> -->
+			<evaluate
+				expression="operacionConsultada.getCompromisosContrato().add(compromisoContrato, cdServicio)" />
+			<evaluate expression="operacionConsultada.getCompromisosContrato().deselect()" />
+			<set
+				name="operacionConsultada.compromisosContrato.hayCompromisosModificados"
+				value="true"></set>
+			<render
+				fragments="panelTotalesCompromisos,panelFormCompromisos,panelBotonesCompromisosSup,panelPrincipalDetalleOperacion" />
+		</transition>
+
+		<transition on="delCompromiso">
+			<evaluate
+				expression="operacionConsultada.getCompromisosContrato().remove(requestParameters.index, requestParameters.cdServic)"></evaluate>
+			<evaluate expression="operacionConsultada.getCompromisosContrato().deselect()" />
+			<set
+				name="operacionConsultada.compromisosContrato.hayCompromisosModificados"
+				value="true"></set>
+			<render
+				fragments="panelTotalesCompromisos,panelFormCompromisos,panelBotonesCompromisosSup,panelPrincipalDetalleOperacion" />
+		</transition>
+
+		<transition on="updateCompromiso">
+			<evaluate
+				expression="operacionComercialMBean.validarCompromisoConMensaje(mensajeCompromisoIndividual,compromisoContrato, operacionConsultada)"
+				result="viewScope.resultadoValidacionCompromisoIndividual" />
+			<!-- <evaluate expression="compromisosContratoMBean.tratamientoCompromiso(compromisoContrato)"/> -->
+			<evaluate
+				expression="operacionConsultada.getCompromisosContrato().update(compromisoContrato, cdServicio, compromisoContrato.index)"></evaluate>
+			<!--evaluate expression="compromisoContrato.setModificado(true)"/ -->
+			<evaluate expression="operacionConsultada.getCompromisosContrato().deselect()" />
+			<!--set name="operacionConsultada.compromisosContrato.hayCompromisosModificados" 
+				value="true"></set -->
+			<render
+				fragments="panelTotalesCompromisos,panelFormCompromisos,panelBotonesCompromisosSup,panelPrincipalDetalleOperacion" />
+		</transition>
+
+		<transition on="cargarDialogoCompromiso">
+			<set name="mensajeCompromisoIndividual.mensaje" value="''" />
+			<set name="cdServicio" value="requestParameters.cdServic" />
+			<set name="dsServicio" value="requestParameters.dsServic" />
+			<evaluate expression="operacionConsultada.getCompromisosContrato().deselect()" />
+			<evaluate
+				expression="operacionConsultada.getCompromisosContrato().getSelectedCompromiso()"
+				result="compromisoContrato" result-type="es.indra.isl.negocia.bean.CompromisoContratoBean"></evaluate>
+			<evaluate
+				expression="operacionComercialMBean.getListaMetodosReconocimientoIngresosPorServicio(operacionConsultada, cdServicio)"
+				result="viewScope.listaMetodosReconocimientoIngresos" />
+			<evaluate
+				expression="operacionComercialMBean.getListaCompromisosServicio(operacionConsultada, compromisoContrato, cdServicio)" />
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('compromiso')" />
+			<evaluate
+				expression="operacionComercialMBean.actualizarDetalleNuevoCompromiso(operacionConsultada, compromisoContrato)" />
+		</transition>
+
+		<transition on="cargarDialogoCompromisoEdit">
+			<set name="mensajeCompromisoIndividual.mensaje" value="''" />
+			<set name="cdServicio" value="requestParameters.cdServic" />
+			<set name="dsServicio" value="requestParameters.dsServic" />
+			<evaluate
+				expression="operacionConsultada.getCompromisosContrato().select(requestParameters.cdServic,requestParameters.index)"
+				result="compromisoContrato" result-type="es.indra.isl.negocia.bean.CompromisoContratoBean"></evaluate>
+			<evaluate
+				expression="operacionComercialMBean.getListaMetodosReconocimientoIngresosPorServicio(operacionConsultada, cdServicio)"
+				result="viewScope.listaMetodosReconocimientoIngresos" />
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('compromiso')" />
+			<evaluate
+				expression="operacionComercialMBean.actualizarDetalleEditarCompromiso(operacionConsultada, compromisoContrato, cdServicio)" />
+		</transition>
+
+
+		<transition on="selectOpcionCrearCompromiso">
+			<evaluate
+				expression="operacionComercialMBean.selectOpcionCrearCompromiso(operacionConsultada, compromisoContrato)" />
+		</transition>
+
+		<transition on="seleccionarCompromisoAmpliacion">
+			<evaluate
+				expression="operacionComercialMBean.seleccionCompromisoAmpliacion(operacionConsultada,compromisoContrato)" />
+		</transition>
+
+		<transition on="verProyectosAsociados">
+			<set name="compromisoContrato.flagMostrarProyectos" value="true" />
+		</transition>
+
+		<transition on="updateMRI">
+			<evaluate
+				expression="operacionComercialMBean.getListaMetodosReconocimientoIngresosPorServicio(operacionConsultada, compromisoContrato.cdServ)"
+				result="viewScope.listaMetodosReconocimientoIngresos" />
+			<evaluate
+				expression="(operacionComercialMBean.getComparaListaMRIPorServicioUpdate(operacionConsultada, compromisoContrato.cdServ, cdServicio))?compromisoContrato.cdMeReIn:' '"
+				result="compromisoContrato.cdMeReIn" />
+		</transition>
+
+		<!-- <transition on="volverCompromisos"> <set name="operacionConsultada.compromisosContrato" 
+			value="null"/> <render fragments="contenedor_Menu_Cuerpo"/> <evaluate expression="listaErrores.clear()" 
+			/> <set name="viewScope.mostrarAceptarCMarco" value="false" type="boolean"/> 
+			</transition> -->
+
+		<transition on="validarCompromisos">
+			<evaluate
+				expression="operacionComercialMBean.validarCompromisosContrato(operacionConsultada, operacionConsultada.getCompromisosContrato(), listaErrores)" />
+		</transition>
+
+		<transition on="reajustaImportesCompromiso">
+			<evaluate
+				expression="operacionConsultada.getCompromisosContrato().reajustaImportesCompSelected()" />
+		</transition>
+
+		<!-- transiciones validaSopDoc -->
+		<transition on="validaPosibilidadSolicitarAutoriza">
+			<evaluate
+				expression="operacionComercialMBean.validaSoporteDocumentalListoParaSolicitar(operacionConsultada)"
+				result="isOkSopDoc" />
+		</transition>
+
+		<transition on="validaPosibilidadRetirarAutoriza">
+			<evaluate
+				expression="operacionComercialMBean.validaSoporteDocumentalListoParaRetirar(operacionConsultada)"
+				result="isOkSopDoc" />
+		</transition>
+
+		<transition on="validaPosibilidadRetirarCompromisosAutoriza">
+			<evaluate
+				expression="operacionComercialMBean.validaSoporteDocumentalListoParaVolverAElaborar(operacionConsultada)"
+				result="isOkSopDoc" />
+		</transition>
+
+		<!-- <transition on="enviarAsesoriaJuridica" to="decisionDetalleOperacion"> -->
+		<transition on="enviarAsesoriaJuridica">
+			<evaluate
+				expression="operacionComercialMBean.enviarAsesoriaJuridica(operacionConsultada)" />
+			<!-- continua recarga en "mensajeOKEnvioAsesoriaJuridicaContinuar" -->
+		</transition>
+		<transition on="mensajeOKEnvioAsesoriaJuridicaContinuar"
+			to="decisionDetalleOperacion">
+		</transition>
+
+		<transition on="retirarAsesoriaJuridica" to="decisionDetalleOperacion">
+			<evaluate
+				expression="operacionComercialMBean.retirarSolicitudAutorizacionCG(operacionConsultada)" />
+		</transition>
+
+		<transition on="revertirAsesoriaJuridica" to="decisionDetalleOperacion">
+			<evaluate
+				expression="operacionComercialMBean.volverAElaborarAutorizacionCG(operacionConsultada)" />
+		</transition>
+
+		<transition on="validacionesConCompromisos">
+			<evaluate
+				expression="operacionComercialMBean.validaCambiosFechasDelProyecto(operacionConsultada)"
+				result="viewScope.indicadorValidaciones" />
+		</transition>
+
+		<!-- GESTION TAB COMPROMISOS - FIN -->
+
+	</view-state>
+
+
+
+	<!-- Vista con soporte para asignación GDM -->
+	<view-state id="basegdm" parent="#base">
+		<var name="tipoAsignacion" class="es.indra.isl.negocia.bean.TipoAsignacionBean" />
+		<var name="operacionMind" class="es.indra.isl.negocia.bean.OperacionMindBean" />
+		<var name="listaUsuarios" class="java.util.ArrayList" />
+		<var name="simpleSelectionPaisesCliente" class="org.richfaces.model.selection.SimpleSelection" />
+		<var name="operacionMindSelection" class="es.indra.isl.negocia.util.SelectionModel" />
+		<var name="nombreClienteMind"
+			class="es.indra.isl.negocia.bean.CriteriosBusquedaClientesBean" />
+		<var name="criteriosBusquedaOperacionMind"
+			class="es.indra.isl.negocia.bean.CriteriosBusquedaOperacionMindBean" />
+		<var name="operacionMindSelection" class="es.indra.isl.negocia.util.SelectionModel" />
+		<var name="centroSelection" class="es.indra.isl.negocia.util.SelectionModel" />
+		<var name="mapaDescripcionMercadosGlobales" class="java.util.HashMap" />
+		<var name="listaUnidadEntrega" class="java.util.ArrayList" />
+		<var name="listaSubUnidadEntrega" class="java.util.ArrayList" />
+		<var name="listadoCentrosGlobales" class="java.util.ArrayList" />
+		<var name="operacionSeleccionada" class="es.indra.isl.negocia.bean.OperacionMindBean" />
+		<var name="usuarioSelection" class="es.indra.isl.negocia.util.SelectionModel" />
+		<var name="criteriosBusquedaResponsable"
+			class="es.indra.isl.negocia.bean.CriteriosBusquedaUsuariosBean" />
+		<var name="tipoPanel" class="java.lang.String" />
+		<!-- Variables usadas en la selección de proyectos/servicios -->
+		<var name="tipologiaServOp" class="es.indra.isl.negocia.bean.TipologiaServicioOpBean" />
+		<var name="tipologiaServOpSel" class="es.indra.isl.negocia.bean.TipologiaServicioOpBean" />
+		<var name="mapaTipologiaServicios" class="java.util.HashMap" />
+		<var name="mapaTipologiaServiciosSel" class="java.util.HashMap" />
+
+		<var name="arbolEstructuraReportingGB"
+			class="es.indra.isl.negocia.bean.ArbolEstructurasReportingBean" />
+		<var name="arbolEstructuraReportingHO"
+			class="es.indra.isl.negocia.bean.ArbolEstructurasReportingBean" />
+		<var name="estructuraSeleccionadaGB" class="es.indra.isl.negocia.bean.ItemArbolEstrucReportingBean" />
+		<var name="estructuraSeleccionadaHO" class="es.indra.isl.negocia.bean.ItemArbolEstrucReportingBean" />
+
+		<on-entry>
+			<set name="operacionMind.gestorCuenta" value="operacionConsultada.codigoResponsable"></set>
+			<set name="operacionMind.dsGestorCuenta" value="operacionConsultada.descripcionRenponsable"></set>
+			<set name="operacionMind.cdMercadoGlobal" value="operacionConsultada.codMercadoGlobal"></set>
+			<set name="operacionMind.cdMercado" value="operacionConsultada.codigoMercado"></set>
+			<set name="operacionMind.codigoCliente" value="operacionConsultada.codigoCliente"></set>
+			<set name="operacionMind.descripcionCliente" value="operacionConsultada.descripcionCliente"></set>
+			<set name="operacionMind.cdMetaCliente" value="operacionConsultada.codMetaCliente"></set>
+			<set name="operacionMind.dsMetaCliente" value="operacionConsultada.descMetaCliente"></set>
+			<set name="operacionMind.codigoPaisOperacion" value="operacionConsultada.paisCompania"></set>
+			<evaluate
+				expression="seleccionOperacionMBean.cargarDescPaisOperGDM(operacionMind)" />
+			<evaluate
+				expression="operacionComercialMBean.getTablaCostes(operacionConsultada)"
+				result="viewScope.tablaCostes" />
+			<evaluate
+				expression="seleccionOperacionMBean.getMapaDescripcionMercadosGlobales()"
+				result="viewScope.mapaDescripcionMercadosGlobales"></evaluate>
+			<evaluate
+				expression="busquedaOperaciones.cargarMercadosGlobales(confUsuarioBean)"
+				result="viewScope.listaMercadoGlobal" />
+			<evaluate
+				expression="seleccionOperacionMBean.rellenarFormularioTipoOperacion(operacionConsultada)" />
+			<evaluate
+				expression="seleccionOperacionMBean.traspasarTipoFormularioOperacion(operacionConsultada,operacionMind)" />
+			<evaluate
+				expression="seleccionOperacionMBean.traspasarServicios(operacionConsultada,operacionMind)" />
+			<evaluate
+				expression="seleccionOperacionMBean.establecerTipoAsignacion(operacionConsultada, tipoAsignacion)"
+				result="operacionSeleccionada" />
+			<evaluate
+				expression="seleccionOperacionMBean.cargarTipoOperacion(operacionSeleccionada)" />
+			<evaluate expression="seleccionOperacionMBean.cargarUnidadesEntrega(null)"
+				result="listaUnidadEntrega" />
+			<evaluate
+				expression="seleccionOperacionMBean.getCentrosGlobalesOperacionMind(operacionMind.codigoPaisOperacion)"
+				result="listadoCentrosGlobales" />
+			<evaluate expression="seleccionServicioMBean.buscarServicios(arbolServicios)"
+				result="arbolServicios" />
+			<!-- <evaluate expression="seleccionOperacionMBean.cargarMapaTipologiaServicio(operacionMind,tipologiaServOp)" 
+				result="viewScope.mapaTipologiaServicios"/> -->
+			<evaluate
+				expression="(operacionSeleccionada==null)?seleccionOperacionMBean.cargarMapaTipologiaServicio(operacionMind,tipologiaServOp):null"
+				result="viewScope.mapaTipologiaServicios" />
+			<evaluate
+				expression="seleccionOperacionMBean.traspasarServicios(operacionConsultada,operacionSeleccionada,tipologiaServOpSel)" />
+			<evaluate
+				expression="(operacionSeleccionada!=null)?seleccionOperacionMBean.cargarMapaTipologiaServicio(operacionSeleccionada,tipologiaServOpSel):null"
+				result="viewScope.mapaTipologiaServiciosSel" />
+			<!-- <evaluate expression="seleccionOperacionMBean.isPuedeAsociarse(operacionConsultada)" 
+				result="operacionConsultada" /> -->
+			<!-- <evaluate expression="seleccionOperacionMBean.isRequiereAsociarse(operacionConsultada)" 
+				result="operacionConsultada" /> -->
+			<evaluate expression="seleccionOperacionMBean.validarMercadoTI(operacionMind)" />
+			<evaluate
+				expression="seleccionOperacionMBean.cargarFlagTieneEstructuraReportingMercadoGB(operacionConsultada,operacionMind)" />
+			<evaluate
+				expression="seleccionOperacionMBean.cargarFlagAplicaOpEvaluable(operacionMind)" />
+		</on-entry>
+
+		<transition on="limpiarErrores">
+			<evaluate expression="listaErrores.clear()" />
+			<set name="operacionSeleccionada" value="null" />
+			<!-- <set name="operacionSeleccionada" value="null"/> <evaluate expression="operacionMind.clear()"></evaluate> 
+				<set name="criteriosBusquedaOperacionMind.codigo" value="null"></set> <set 
+				name="criteriosBusquedaOperacionMind.descripcion" value="null"></set> -->
+		</transition>
+
+		<transition on="limpiarOperacionExistente">
+			<set name="operacionSeleccionada" value="null" />
+			<evaluate expression="tipologiaServOpSel.clear()" />
+		</transition>
+
+		<!-- buscarCliente -->
+		<transition on="iniciarBusquedaClientesMind">
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('busquedaClientesOperacionMind')" />
+			<render fragments="tablaClientesMind" />
+		</transition>
+		<transition on="buscarClientesMind">
+			<evaluate expression="seleccionClienteMBean.buscarClientes(nombreClienteMind)"
+				result="viewScope.listadoDeClientes" />
+			<render fragments="tablaClientesMind" />
+		</transition>
+		<transition on="agregarClienteMind">
+			<evaluate
+				expression="seleccionClienteMBean.agregarClientes(simpleSelectionClienteMind,listadoDeClientes)"
+				result="viewScope.clienteSeleccionado" />
+			<set name="criteriosBusquedaOperacionMind.cdCliente" value="viewScope.clienteSeleccionado.cdClient"></set>
+			<set name="criteriosBusquedaOperacionMind.dsCliente" value="viewScope.clienteSeleccionado.dsClient"></set>
+			<evaluate expression="simpleSelectionClienteMind.clear()" />
+			<render fragments="desClienteBusquedaOperacionMind"></render>
+		</transition>
+		<!-- buscar Servicios -->
+		<transition on="cargarDialogoServicios">
+			<evaluate expression="seleccionServicioMBean.buscarServicios()"
+				result="arbolServicios" />
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('servicios')" />
+		</transition>
+		<transition on="aceptarServicio">
+			<evaluate
+				expression="seleccionServicioMBean.agregarServicioOperacionMind(arbolServicios.nodoSelecionadoTree.parent.data,arbolServicios.nodoSeleccionado,operacionMind)"
+				result="operacionMind" />
+			<render fragments="listaServicios"></render>
+		</transition>
+		<transition on="eliminarServicio">
+			<evaluate
+				expression="seleccionServicioMBean.eliminarServicioOperacionMind(requestParameters.servicioEliminado, requestParameters.nodoRaizEliminado, operacionMind.servicios)" />
+		</transition>
+
+		<!-- buscar Usuario -->
+		<transition on="iniciarBusquedaResponsablesGDM">
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('busquedaResponsables')" />
+			<set name="viewScope.tipoBusqueda" value="'GDM'" />
+			<evaluate expression="usuarioSelection.clear()" />
+			<!--<evaluate expression="listaUsuarios.clear()"/> -->
+			<set name="listaUsuarios" value="null" />
+			<set name="tipoPanel" value="requestParameters.tipoPanel"></set>
+		</transition>
+		<transition on="buscarUsuariosResponsable">
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuarios(criteriosBusquedaResponsable)"
+				result="listaUsuarios" />
+			<evaluate expression="usuarioSelection.clear()" />
+		</transition>
+		<transition on="buscarGerenteCuenta">
+			<set name="operacionMind.dsGestorCuenta" value="null"></set>
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuario(operacionMind.gestorCuenta)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="operacionMind.gestorCuenta" value="viewScope.responsableSeleccionado.codEmpleado"></set>
+			<set name="operacionMind.dsGestorCuenta" value="viewScope.responsableSeleccionado.desEmpleado"></set>
+		</transition>
+		<transition on="buscarGestorOperacion">
+			<set name="operacionMind.dsGestorOperacion" value="null"></set>
+			<evaluate
+				expression="seleccionUsuarioMBean.buscarUsuario(operacionMind.gestorOperacion)"
+				result="viewScope.responsableSeleccionado" />
+			<set name="operacionMind.gestorOperacion" value="viewScope.responsableSeleccionado.codEmpleado"></set>
+			<set name="operacionMind.dsGestorOperacion" value="viewScope.responsableSeleccionado.desEmpleado"></set>
+		</transition>
+		<transition on="aceptarResponsableGDM">
+			<evaluate
+				expression="seleccionUsuarioMBean.aceptarUsuario(usuarioSelection,listaUsuarios)"
+				result="viewScope.responsableSeleccionado" />
+			<evaluate
+				expression="seleccionUsuarioMBean.renderizarResponsableOperacionMind(operacionMind, tipoPanel, viewScope.responsableSeleccionado)" />
+			<evaluate expression="listaUsuarios.clear()" />
+			<set name="criteriosBusquedaResponsable.codigo" value="''"></set>
+			<set name="criteriosBusquedaResponsable.descripcion" value="''"></set>
+			<evaluate expression="usuarioSelection.clear()" />
+			<render
+				fragments="codigoGestorCuenta,descripcionGestorCuenta,codigoGestorOperacion,descripcionGestorOperacion,codigoRespCentroGlobal1,descripcionRespCentroGlobal1,codigoRespCentroGlobal2,descripcionRespCentroGlobal2,codigoRespCentroGlobal3,descripcionRespCentroGlobal3" />
+		</transition>
+		<transition on="borrarGerenteCuenta">
+			<set name="operacionMind.gestorCuenta" value="null" />
+			<set name="operacionMind.dsGestorCuenta" value="null" />
+			<render fragments="codigoGestorCuenta,descripcionGestorCuenta" />
+		</transition>
+		<transition on="borrarGestorOperacion">
+			<set name="operacionMind.gestorOperacion" value="null" />
+			<set name="operacionMind.dsGestorOperacion" value="null" />
+			<render fragments="codigoGestorOperacion,descripcionGestorOperacion" />
+		</transition>
+		<transition on="borrarResponsableProduccion">
+			<set name="operacionMind.cdRespCentroGlobal1" value="null" />
+			<set name="operacionMind.dsRespCentroGlobal1" value="null" />
+			<render fragments="filaCentrosGlobales1" />
+		</transition>
+		<transition on="borrarResponsableProduccion2">
+			<set name="operacionMind.cdRespCentroGlobal2" value="null" />
+			<set name="operacionMind.dsRespCentroGlobal2" value="null" />
+			<render fragments="filaCentrosGlobales2" />
+		</transition>
+		<transition on="borrarResponsableProduccion3">
+			<set name="operacionMind.cdRespCentroGlobal3" value="null" />
+			<set name="operacionMind.dsRespCentroGlobal3" value="null" />
+			<render fragments="filaCentrosGlobales3" />
+		</transition>
+
+		<!-- busqueda centros globales -->
+		<transition on="iniciarBusquedaCentros">
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('centrosGlobales')" />
+			<evaluate expression="centroSelection.clear()" />
+			<evaluate expression="listadoCentrosGlobales.clear()" />
+			<evaluate
+				expression="seleccionOperacionMBean.getCentrosGlobalesOperacionMind(operacionConsultada)"
+				result="listadoCentrosGlobales"></evaluate>
+			<render fragments="formBusquedaCentrosGlobales:tablaCentrosGlobales" />
+		</transition>
+		<transition on="aceptarCentroGlobal">
+			<evaluate
+				expression="seleccionOperacionMBean.aceptarCentroGlobal(centroSelection,listadoCentrosGlobales)"
+				result="viewScope.centroSeleccionado" />
+			<evaluate
+				expression="seleccionOperacionMBean.renderizarCentroGlobal(operacionMind, viewScope.centroSeleccionado)"></evaluate>
+			<render fragments="listaCentrosGlobal"></render>
+		</transition>
+		<transition on="borrarCentros">
+			<evaluate
+				expression="seleccionOperacionMBean.eliminarCentroGlobal(requestParameters.codCentroEliminado, operacionMind.centrosGlobales)" />
+		</transition>
+
+		<!-- Buscar Paises -->
+		<transition on="obtenerPaises">
+			<evaluate expression="seleccionOperacionMBean.cargarListaPaisesMind()"
+				result="viewScope.listaPaisesCliente" />
+			<evaluate expression="simpleSelectionPaisesCliente.clear()" />
+		</transition>
+		<transition on="aceptarPaisesCliente">
+			<evaluate
+				expression="seleccionGeograficaMBean.aceptarPais(simpleSelectionPaisesCliente,viewScope.listaPaisesCliente)"
+				result="viewScope.paisSeleccionado" />
+			<set name="operacionMind.paisOperacion" value="viewScope.paisSeleccionado.dsPaises"></set>
+			<set name="operacionMind.codigoPaisOperacion" value="viewScope.paisSeleccionado.cdPaises"></set>
+			<set name="operacionMind.cdCentroGlobal1" value="null" />
+			<set name="operacionMind.cdRespCentroGlobal1" value="null" />
+			<set name="operacionMind.dsRespCentroGlobal1" value="null" />
+			<set name="operacionMind.cdCentroGlobal2" value="null" />
+			<set name="operacionMind.cdRespCentroGlobal2" value="null" />
+			<set name="operacionMind.dsRespCentroGlobal2" value="null" />
+			<set name="operacionMind.cdCentroGlobal3" value="null" />
+			<set name="operacionMind.cdRespCentroGlobal3" value="null" />
+			<set name="operacionMind.dsRespCentroGlobal3" value="null" />
+			<evaluate
+				expression="seleccionOperacionMBean.getCentrosGlobalesOperacionMind(operacionMind.codigoPaisOperacion)"
+				result="listadoCentrosGlobales" />
+			<evaluate expression="listaSubUnidadEntrega.clear()" />
+			<evaluate
+				expression="seleccionOperacionMBean.cargarSubUnidadesEntrega(operacionMind.codigoPaisOperacion, operacionMind.unidadEntrega)"
+				result="listaSubUnidadEntrega" />
+			<evaluate
+				expression="seleccionOperacionMBean.cargarFlagTieneEstructuraReportingMercadoHO(operacionMind)" />
+			<evaluate
+				expression="seleccionOperacionMBean.cargarFlagAplicaOpEvaluable(operacionMind)" />
+			<set name="operacionMind.justeval" value="null" />
+			<render
+				fragments="filaPaises,filaUnidadEntrega,filaSubUnidadEntrega,filaCentrosGlobales1,filaCentrosGlobales2,filaCentrosGlobales3,panelTablaEdOpMind,opeval,justeval" />
+		</transition>
+		<transition on="borrarPaisOperacion">
+			<set name="operacionMind.paisOperacion" value="null" />
+			<set name="operacionMind.cdCentroGlobal1" value="null" />
+			<set name="operacionMind.cdRespCentroGlobal1" value="null" />
+			<set name="operacionMind.dsRespCentroGlobal1" value="null" />
+			<set name="operacionMind.cdCentroGlobal2" value="null" />
+			<set name="operacionMind.cdRespCentroGlobal2" value="null" />
+			<set name="operacionMind.dsRespCentroGlobal2" value="null" />
+			<set name="operacionMind.cdCentroGlobal3" value="null" />
+			<set name="operacionMind.cdRespCentroGlobal3" value="null" />
+			<set name="operacionMind.dsRespCentroGlobal3" value="null" />
+			<set name="operacionMind.codigoPaisOperacion" value="null" />
+			<evaluate expression="listaSubUnidadEntrega.clear()" />
+		</transition>
+		<transition on="cargarSubUniEntr">
+			<evaluate
+				expression="seleccionOperacionMBean.cargarSubUnidadesEntrega(operacionMind.codigoPaisOperacion, operacionMind.unidadEntrega)"
+				result="listaSubUnidadEntrega" />
+			<evaluate
+				expression="seleccionOperacionMBean.cargarFlagTieneEstructuraReportingMercadoHO(operacionMind)" />
+			<render fragments="filaUnidadEntrega, filaSubUnidadEntrega" />
+		</transition>
+
+		<!-- Buscar Operacion Mind -->
+		<transition on="iniciarBusquedaOperacionMind">
+			<evaluate
+				expression="visibilidadDialogos.habilitarDialogo('busquedaOperacionMind')" />
+			<evaluate expression="criteriosBusquedaOperacionMind.clear()" />
+			<evaluate
+				expression="seleccionOperacionMBean.buscarOperaciones(criteriosBusquedaOperacionMind,usuarioBean,operacionMind,operacionConsultada)"
+				result="viewScope.listaOperacionesMind" />
+			<evaluate expression="operacionMindSelection.clear()" />
+		</transition>
+		<transition on="buscarOperacionMind">
+			<evaluate
+				expression="seleccionOperacionMBean.buscarOperaciones(criteriosBusquedaOperacionMind,usuarioBean,operacionMind,operacionConsultada)"
+				result="viewScope.listaOperacionesMind" />
+			<evaluate expression="operacionMindSelection.clear()" />
+			<render fragments="formAsignarOperacion:tablaAsignarOperaciones" />
+		</transition>
+		<transition on="aceptarOperacionMind">
+			<evaluate
+				expression="seleccionOperacionMBean.aceptarOperacionMind(operacionMindSelection,viewScope.listaOperacionesMind)"
+				result="operacionSeleccionada" />
+			<evaluate
+				expression="seleccionOperacionMBean.getDetalleOperacionMind(operacionSeleccionada.cdOperacionMind)"
+				result="operacionSeleccionada" />
+			<set name="viewScope.listaOperacionesMind" value="null"></set>
+			<set name="criteriosBusquedaOperacionMind.codigo"
+				value="operacionSeleccionada == null ? null : operacionSeleccionada.cdOperacionMind"></set>
+			<set name="criteriosBusquedaOperacionMind.descripcion"
+				value="operacionSeleccionada == null ? null : operacionSeleccionada.dsOperacionMind"></set>
+			<evaluate expression="operacionMindSelection.clear()" />
+			<evaluate
+				expression="seleccionOperacionMBean.traspasarServicios(operacionConsultada,operacionSeleccionada,tipologiaServOpSel)" />
+			<evaluate
+				expression="seleccionOperacionMBean.cargarMapaTipologiaServicio(operacionSeleccionada,tipologiaServOpSel)"
+				result="viewScope.mapaTipologiaServiciosSel" />
+			<render fragments="panelAsignarOperacion,panelOperacionMindSeleccionada" />
+		</transition>
+		<transition on="buscarOperacionMindRapida">
+			<evaluate
+				expression="seleccionOperacionMBean.buscarOperaciones(criteriosBusquedaOperacionMind,usuarioBean,operacionMind,operacionConsultada)"
+				result="viewScope.listaOperacionesMind" />
+			<evaluate
+				expression="seleccionOperacionMBean.cargarOperacionMind(viewScope.listaOperacionesMind, criteriosBusquedaOperacionMind)"
+				result="operacionSeleccionada" />
+			<set name="criteriosBusquedaOperacionMind.codigo"
+				value="operacionSeleccionada == null ? null : operacionSeleccionada.cdOperacionMind"></set>
+			<set name="criteriosBusquedaOperacionMind.descripcion"
+				value="operacionSeleccionada == null ? null : operacionSeleccionada.dsOperacionMind"></set>
+			<render fragments="panelAsignarOperacion,panelOperacionMindSeleccionada" />
+		</transition>
+		<transition on="abrirContratosAsociados">
+			<evaluate
+				expression="seleccionOperacionMBean.getContratosAsociadosOpeMind(operacionSeleccionada)"
+				result="viewScope.listadoContratosOpeMind" />
+			<evaluate
+				expression="seleccionOperacionMBean.getProyectosAsociadosOpeMind(listadoContratosOpeMind)"
+				result="viewScope.listadoProyectos" />
+			<evaluate
+				expression="seleccionOperacionMBean.getSubProyectosAsociadosOpeMind(listadoContratosOpeMind)"
+				result="viewScope.listadoSubProyectos" />
+			<render fragments="panelListaContratosOpeMind" />
+		</transition>
+		<transition on="fijarMayusculas">
+			<evaluate expression="seleccionOperacionMBean.fijarMayusculas(operacionMind)" />
+		</transition>
+		<transition on="sugerirCodOperacionMind">
+			<set name="operacionMind.cdOperacionMind" value="operacionConsultada.codigoOperacion" />
+			<!-- <evaluate expression="operacionConsultada.codigoOperacion" result="operacionMind.cdOperacionMind"/> -->
+			<evaluate
+				expression="seleccionOperacionMBean.rellenarFormularioTipoOperacion(operacionConsultada)" />
+			<evaluate
+				expression="seleccionOperacionMBean.traspasarTipoFormularioOperacion(operacionConsultada,operacionMind)" />
+		</transition>
+		<transition on="cargarOperacionGDMContratoPrincipal">
+			<evaluate
+				expression="seleccionOperacionMBean.getDetalleOperacionMindContratoPrincipalSinCache(operacionConsultada)"
+				result="operacionSeleccionada" />
+			<evaluate
+				expression="seleccionOperacionMBean.cargarTipoOperacion(operacionSeleccionada)" />
+			<evaluate expression="tipologiaServOpSel.clear()" />
+			<evaluate
+				expression="seleccionOperacionMBean.traspasarServicios(operacionConsultada,operacionSeleccionada,tipologiaServOpSel)" />
+			<evaluate
+				expression="seleccionOperacionMBean.cargarMapaTipologiaServicio(operacionSeleccionada,tipologiaServOpSel)"
+				result="viewScope.mapaTipologiaServiciosSel" />
+		</transition>
+		<!-- Estructruras de reporting -->
+		<transition on="cargarArbolEstReportingGB">
+			<evaluate
+				expression="seleccionOperacionMBean.cargarEstructurasReportingGestionMercadoGB(arbolEstructuraReportingGB,operacionConsultada)"
+				result="viewScope.arbolEstructuraReportingGB" />
+		</transition>
+		<transition on="procesarSeleccionEstructuraReportingGB">
+			<set name="estructuraSeleccionadaGB" value="arbolEstructuraReportingGB.nodoSeleccionado" />
+			<set name="operacionMind.cdEstReportingGEGB" value="estructuraSeleccionadaGB.idElemento"></set>
+			<evaluate
+				expression="seleccionOperacionMBean.setDescripcionEstructurasReportingGestion(operacionMind)" />
+			<render fragments="panelEstReportingGB,dsEstReportingGB"></render>
+		</transition>
+		<transition on="cargarArbolEstReportingHO">
+			<evaluate
+				expression="seleccionOperacionMBean.cargarEstructurasReportingGestionMercadoHO(arbolEstructuraReportingHO, operacionMind)"
+				result="viewScope.arbolEstructuraReportingHO" />
+		</transition>
+		<transition on="procesarSeleccionEstructuraReportingHO">
+			<set name="estructuraSeleccionadaHO" value="arbolEstructuraReportingHO.nodoSeleccionado" />
+			<set name="operacionMind.cdEstReportingGEHO" value="estructuraSeleccionadaHO.idElemento"></set>
+			<evaluate
+				expression="seleccionOperacionMBean.setDescripcionEstructurasReportingGestion(operacionMind)" />
+			<render fragments="panelEstReportingHO,dsEstReportingHO"></render>
+		</transition>
+		<transition on="borrarEstReportingGB">
+			<set name="operacionMind.cdEstReportingGEGB" value="null" />
+			<set name="operacionMind.dsEstReportingGEGB" value="null" />
+			<render fragments="dsEstReportingGB" />
+		</transition>
+		<transition on="borrarEstReportingHO">
+			<set name="operacionMind.cdEstReportingGEHO" value="null" />
+			<set name="operacionMind.dsEstReportingGEHO" value="null" />
+			<render fragments="dsEstReportingHO" />
+		</transition>
+		<!-- Fin Estructruras de reporting -->
+
+		<!-- PPO: Tratamiento de alertas desde el detalle de la operacion - INICIO -->
+		<transition on="guardarRevisionFechas" to="start">
+			<evaluate
+				expression="alertasMBean.comprobarFechasResolucion(externalContext.sessionMap.confUsuarioBean,operacionConsultada,operacionesAlertaBean)" />
+			<evaluate
+				expression="alertasMBean.resolverAlertasFecha(operacionConsultada,listaAlertasFecha,operacionesAlertaBean.mensajeErrorAlertasFecha)" />
+			<evaluate
+				expression="operacionComercialMBean.listaAlertasOferta(operacionConsultada)"
+				result="conversationScope.listaAlertas" />
+			<evaluate
+				expression="operacionComercialMBean.insertarStatusAutomaticoFechaInicio(operacionConsultada, externalContext.getApplicationMap().tablaLiterales)"></evaluate>
+			<evaluate
+				expression="alertasMBean.obtenerInfoTratamientoAlerta(operacionConsultada,conversationScope.listaAlertas,'10')" />
+
+			<evaluate
+				expression="operacionComercialMBean.cargarAcciones(operacionConsultada)"
+				result="conversationScope.listaAccionesPerm" />
+			<evaluate
+				expression="operacionComercialMBean.getValidacionOperacion(operacionConsultada)"
+				result="conversationScope.listaValidaciones" />
+		</transition>
+		<transition on="verPopUpResolucionFechasSinPlanPPO">
+			<evaluate
+				expression="operacionComercialMBean.setDatosStatusFechaInicio(operacionConsultada)"></evaluate>
+			<evaluate
+				expression="alertasMBean.obtenerInfoTratamientoAlerta(operacionConsultada,conversationScope.listaAlertas,'10')"
+				result="listaAlertasFecha" />
+			<set name="operacionesAlertaBean.mensajeErrorAlertasFecha" value="'LAB_MSG_REVISAR_FECHA_INICIO_BLOQUEO_LINK_PPO'" />
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('resolucionFechas')" />
+		</transition>
+		<transition on="verPopUpResolucionFechasConPlanPPO">
+			<evaluate
+				expression="operacionComercialMBean.setDatosStatusFechaInicio(operacionConsultada)"></evaluate>
+			<evaluate
+				expression="alertasMBean.obtenerInfoTratamientoAlerta(operacionConsultada,conversationScope.listaAlertas,'10')"
+				result="listaAlertasFecha" />
+			<set name="operacionesAlertaBean.mensajeErrorAlertasFecha"
+				value="'LAB_MSG_REVISAR_FECHA_INICIO_BLOQUEO_LINK_CONSULTA_PPO'" />
+			<evaluate expression="visibilidadDialogos.habilitarDialogo('resolucionFechas')" />
+		</transition>
+		<!-- PPO: Tratamiento de alertas desde el detalle de la operacion - FIN -->
+	</view-state>
+
+	<subflow-state id="detProspeccion" subflow="detalleprospeccion">
+		<input name="codProspeccion" value="requestParameters.codProspeccion" />
+		<transition on="nuevoMenu" to="nuevoMenu" />
+		<transition on="endBreadCrumb" to="checkCerrarFlujo" />
+		<transition on="endCambioPerfil" to="endCambioPerfil" />
+		<transition to="start" />
+	</subflow-state>
+</flow>
+
+
+	 
+	 

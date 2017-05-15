@@ -5,7 +5,7 @@
  */
 package JPA.controles;
 
-import JPA.clases.Smartphones;
+import JPA.clases.Smartphone;
 import JPA.clases.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import java.util.List;
@@ -31,7 +31,7 @@ public class SmartphonesJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(Smartphones smartphones) {
+    public void create(Smartphone smartphones) {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -45,7 +45,7 @@ public class SmartphonesJpaController implements Serializable {
         }
     }
 
-    public void edit(Smartphones smartphones) throws NonexistentEntityException, Exception {
+    public void edit(Smartphone smartphones) throws NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -73,9 +73,9 @@ public class SmartphonesJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Smartphones smartphones;
+            Smartphone smartphones;
             try {
-                smartphones = em.getReference(Smartphones.class, id);
+                smartphones = em.getReference(Smartphone.class, id);
                 smartphones.getId();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The smartphones with id " + id + " no longer exists.", enfe);
@@ -89,19 +89,19 @@ public class SmartphonesJpaController implements Serializable {
         }
     }
 
-    public List<Smartphones> findSmartphonesEntities() {
+    public List<Smartphone> findSmartphonesEntities() {
         return findSmartphonesEntities(true, -1, -1);
     }
 
-    public List<Smartphones> findSmartphonesEntities(int maxResults, int firstResult) {
+    public List<Smartphone> findSmartphonesEntities(int maxResults, int firstResult) {
         return findSmartphonesEntities(false, maxResults, firstResult);
     }
 
-    private List<Smartphones> findSmartphonesEntities(boolean all, int maxResults, int firstResult) {
+    private List<Smartphone> findSmartphonesEntities(boolean all, int maxResults, int firstResult) {
         EntityManager em = getEntityManager();
         try {
             CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            cq.select(cq.from(Smartphones.class));
+            cq.select(cq.from(Smartphone.class));
             Query q = em.createQuery(cq);
             if (!all) {
                 q.setMaxResults(maxResults);
@@ -113,10 +113,10 @@ public class SmartphonesJpaController implements Serializable {
         }
     }
 
-    public Smartphones findSmartphones(Integer id) {
+    public Smartphone findSmartphones(Integer id) {
         EntityManager em = getEntityManager();
         try {
-            return em.find(Smartphones.class, id);
+            return em.find(Smartphone.class, id);
         } finally {
             em.close();
         }
@@ -126,7 +126,7 @@ public class SmartphonesJpaController implements Serializable {
         EntityManager em = getEntityManager();
         try {
             CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            Root<Smartphones> rt = cq.from(Smartphones.class);
+            Root<Smartphone> rt = cq.from(Smartphone.class);
             cq.select(em.getCriteriaBuilder().count(rt));
             Query q = em.createQuery(cq);
             return ((Long) q.getSingleResult()).intValue();
